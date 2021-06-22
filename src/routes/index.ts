@@ -9,15 +9,19 @@ import cookieParser from 'cookie-parser';
 
 // Routes
 import authenticationRoutes from './authentication';
+import transactionRoutes from './transactions';
 import usersRoutes from './users';
+import walletsRoutes from './wallets';
 
 // Utils
-// const { checkAuth } = require("../utils/checkAuth");
+import { checkAuth } from '../utils/checkAuth';
 
 const router = express.Router();
 
 router.use('/authentication', cookieParser(), authenticationRoutes);
+router.use('/transactions', checkAuth, transactionRoutes);
 router.use('/users', usersRoutes);
+router.use('/wallets', checkAuth, walletsRoutes);
 
 // The rest of the Routes will return a 404 error
 router.use('*', (__, res) => {

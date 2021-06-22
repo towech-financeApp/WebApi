@@ -23,8 +23,6 @@ usersRoutes.post('/register', checkAdmin, async (req, res) => {
 
   const response = await Queue.fetchFromLocalQueue(req.rabbitChannel!, corrId);
 
-  logger.debug(JSON.stringify(response));
-
   res.status(response.status).send(response.payload);
 });
 

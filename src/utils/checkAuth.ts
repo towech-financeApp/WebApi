@@ -122,9 +122,8 @@ export const checkRefresh = async (req: Request, res: Response, next: NextFuncti
     req.user = user;
 
     next();
-  }
-  catch (error) { 
+  } catch (error) {
     res.clearCookie('jid');
-    AmqpMessage.sendHttpError(res, error); 
+    AmqpMessage.sendHttpError(res, error);
   }
 };

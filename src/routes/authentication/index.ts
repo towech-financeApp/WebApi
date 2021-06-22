@@ -87,16 +87,15 @@ authenticationRoutes.post('/refresh', checkRefresh, async (req, res) => {
 
 // logout: if a valid refreshToken is provided, removes the refreshToken from the user
 authenticationRoutes.post('/logout', checkRefresh, async (req, res) => {
-
   try {
     // Logs out the refreshToken
     logoutUser(req.rabbitChannel!, req.user!, req.cookies.jid);
 
     res.clearCookie('jid');
     res.sendStatus(204);
+  } catch (err) {
+    AmqpMessage.sendHttpError(res, err);
   }
-  catch (err) { AmqpMessage.sendHttpError(res, err); }
-
 });
 
 // logout-all: if a valid refreshToken is provided, removes all the tokens from the user
@@ -107,8 +106,9 @@ authenticationRoutes.post('/logout-all', checkRefresh, async (req, res) => {
 
     res.clearCookie('jid');
     res.sendStatus(204);
+  } catch (err) {
+    AmqpMessage.sendHttpError(res, err);
   }
-  catch (err) { AmqpMessage.sendHttpError(res, err); }
 });
 
 export default authenticationRoutes;
