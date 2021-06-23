@@ -1,36 +1,32 @@
-/** walletid.ts
- * Copyright (c) 2020, Jose Tow
+/** root_walletid.js
+ * Copyright (c) 2021, Jose Tow
  * All rights reserved
  *
- * all methods for transactions/:transactionid
+ * all methods for wallet/:walletid
  */
 import express from 'express';
 import logger from 'tow96-logger';
 import Queue, { AmqpMessage } from 'tow96-amqpWrapper';
 
 // models
-import { Transaction } from '../../Models';
+import { Wallet } from '../../Models/index';
 
 const transactionQueue = (process.env.TRANSACTION_QUEUE as string) || 'transactionQueue';
 
-const transactionIdRoutes = express.Router({ mergeParams: true });
+const walletIdRoutes = express.Router({ mergeParams: true });
 
-// GET: /  Returns the requested transaction
-transactionIdRoutes.get('/', async (req, res) => {
+// GET: Get the wallet by it's ID
+walletIdRoutes.get('/', async (req, res) => {
   try {
     const params: any = req.params;
-
-    // Passes the data to the Transaction Workers
     const corrId = Queue.publishWithReply(req.rabbitChannel!, transactionQueue, {
       status: 200,
-      type: 'get-Transaction',
+      type: 'get-Wallet',
       payload: {
+        _id: params.walletId,
         user_id: req.user!._id,
-        _id: params.transactionId,
-      },
+      } as Wallet,
     });
-
-    // Waits for the response from the workers
     const response = await Queue.fetchFromLocalQueue(req.rabbitChannel!, corrId);
 
     res.status(response.status).send(response.payload);
@@ -39,26 +35,19 @@ transactionIdRoutes.get('/', async (req, res) => {
   }
 });
 
-// PATCH: / Edits the requested transaction
-transactionIdRoutes.patch('/', async (req, res) => {
+// PATCH: Change the wallet's data (except the money it holds)
+walletIdRoutes.patch('/', async (req, res) => {
   try {
     const params: any = req.params;
-
-    // Passes the data to the Transaction Workers
     const corrId = Queue.publishWithReply(req.rabbitChannel!, transactionQueue, {
       status: 200,
-      type: 'edit-Transaction',
+      type: 'edit-Wallet',
       payload: {
-        _id: params.transactionId,
+        _id: params.walletId,
         user_id: req.user!._id,
-        wallet_id: req.body.wallet_id,
-        concept: req.body.concept,
-        amount: req.body.amount,
-        transactionDate: req.body.transactionDate,
-      } as Transaction,
+        name: req.body.name,
+      } as Wallet,
     });
-
-    // Waits for the response from the workers
     const response = await Queue.fetchFromLocalQueue(req.rabbitChannel!, corrId);
 
     res.status(response.status).send(response.payload);
@@ -67,21 +56,18 @@ transactionIdRoutes.patch('/', async (req, res) => {
   }
 });
 
-transactionIdRoutes.delete('/', async (req, res) => {
+// DELETE: Deletes a wallet and all its transactions
+walletIdRoutes.delete('/', async (req, res) => {
   try {
     const params: any = req.params;
-
-    // Passes the data to the Transaction Workers
     const corrId = Queue.publishWithReply(req.rabbitChannel!, transactionQueue, {
       status: 200,
-      type: 'delete-Transaction',
+      type: 'delete-Wallet',
       payload: {
+        _id: params.walletId,
         user_id: req.user!._id,
-        _id: params.transactionId,
-      },
+      } as Wallet,
     });
-
-    // Waits for the response from the workers
     const response = await Queue.fetchFromLocalQueue(req.rabbitChannel!, corrId);
 
     res.status(response.status).send(response.payload);
@@ -90,4 +76,24 @@ transactionIdRoutes.delete('/', async (req, res) => {
   }
 });
 
-export default transactionIdRoutes;
+// GET: /transactions  Gets all the transactions of the wallet
+walletIdRoutes.get('/transactions', async (req, res) => {
+  try {
+    const params: any = req.params;
+    const corrId = Queue.publishWithReply(req.rabbitChannel!, transactionQueue, {
+      status: 200,
+      type: 'get-Transactions',
+      payload: {
+        _id: params.walletId,
+        user_id: req.user!._id,
+      } as Wallet,
+    });
+    const response = await Queue.fetchFromLocalQueue(req.rabbitChannel!, corrId);
+
+    res.status(response.status).send(response.payload);
+  } catch (e) {
+    AmqpMessage.sendHttpError(res, e);
+  }
+});
+
+export default walletIdRoutes;

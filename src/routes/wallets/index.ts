@@ -11,9 +11,15 @@ import Queue, { AmqpMessage } from 'tow96-amqpWrapper';
 // models
 import { Wallet } from '../../Models/index';
 
+// routes
+import walletIdRoutes from './walletId';
+
 const transactionQueue = (process.env.TRANSACTION_QUEUE as string) || 'transactionQueue';
 
 const walletsRoutes = express.Router();
+
+// /:walletId Functions for specific wallets
+walletsRoutes.use('/:walletId', walletIdRoutes);
 
 // GET root: gets all the wallets of a user
 walletsRoutes.get('/', async (req, res) => {
