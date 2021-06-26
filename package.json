@@ -8,7 +8,7 @@
     "dev": "ts-node-dev --poll --respawn .",
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "tslint -p tsconfig.json",
-    "start": "ts-node ."
+    "start": "node dist/index.ts"
   },
   "author": "Jose Tow",
   "license": "BSD-3-Clause",
