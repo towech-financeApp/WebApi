@@ -6,7 +6,7 @@
  */
 import express from 'express';
 import logger from 'tow96-logger';
-import Queue, { AmqpMessage } from 'tow96-amqpWrapper';
+import Queue, { AmqpMessage } from 'tow96-amqpwrapper';
 
 // models
 import { Transaction } from '../../Models';

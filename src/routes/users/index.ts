@@ -8,7 +8,7 @@ import express from 'express';
 import logger from 'tow96-logger';
 
 // utils
-import Queue from 'tow96-amqpWrapper';
+import Queue from 'tow96-amqpwrapper';
 import { checkAdmin } from '../../utils/checkAuth';
 
 const usersRoutes = express.Router();

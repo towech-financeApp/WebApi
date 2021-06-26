@@ -7,8 +7,7 @@
 import express from 'express';
 import logger from 'tow96-logger';
 import bcrypt from 'bcryptjs';
-import { AmqpMessage } from 'tow96-amqpWrapper';
-import Queue from 'tow96-amqpWrapper';
+import Queue, { AmqpMessage } from 'tow96-amqpwrapper';
 
 // Models
 import { User } from '../../Models';

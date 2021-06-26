@@ -11,11 +11,10 @@ dotenv.config();
 
 import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
-import Queue from 'tow96-amqpWrapper';
+import Queue, { AmqpMessage } from 'tow96-amqpwrapper';
 
 // utils
 import logger from 'tow96-logger';
-import { AmqpMessage } from 'tow96-amqpWrapper';
 import { User } from '../Models';
 
 const userQueue = (process.env.USER_QUEUE as string) || 'userQueue';

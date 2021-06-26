@@ -7,7 +7,7 @@
  */
 import { User } from '../Models';
 import amqplib from 'amqplib';
-import Queue from 'tow96-amqpWrapper';
+import Queue from 'tow96-amqpwrapper';
 
 const userQueue = (process.env.USER_QUEUE as string) || 'userQueue';
 

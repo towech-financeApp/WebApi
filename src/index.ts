@@ -9,7 +9,7 @@
 import express from 'express';
 import morgan from 'morgan';
 import logger from 'tow96-logger';
-import Queue from 'tow96-amqpWrapper';
+import Queue from 'tow96-amqpwrapper';
 
 // Routes
 import router from './routes';
