@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Towech-FinanceApp Web API",
   "main": "src/index.ts",
+  "engines": {
+    "node": "14.x"
+  },
   "scripts": {
     "build": "tsc",
     "dev": "ts-node-dev --poll --respawn .",
