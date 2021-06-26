@@ -70,7 +70,7 @@ authenticationRoutes.post('/login', async (req, res) => {
       payload: user,
     });
 
-    res.cookie('jid', refreshToken, { httpOnly: true });
+    res.cookie('jid', refreshToken, { httpOnly: true, domain: process.env.COOKIEDOMAIN || '' });
     res.send({ token: authToken });
   } catch (error) {
     AmqpMessage.sendHttpError(res, error);
