@@ -10,8 +10,16 @@
     "lint": "tslint -p tsconfig.json",
     "start": "node dist/index.ts"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/towech-financeApp/WebApi.git"
+  },
   "author": "Jose Tow",
   "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/towech-financeApp/WebApi/issues"
+  },
+  "homepage": "https://github.com/towech-financeApp/WebApi#readme",
   "dependencies": {
     "amqplib": "^0.8.0",
     "bcryptjs": "^2.4.3",
