@@ -25,7 +25,7 @@ const startServer = async () => {
 
   // Sets up the server
   const app = express();
-  app.set('port', 3000);
+  app.set('port', process.env.PORT || 3000);
 
   // Middleware
 
