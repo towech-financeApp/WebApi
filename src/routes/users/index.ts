@@ -5,7 +5,6 @@
  * index for all the users routes
  */
 import express from 'express';
-import logger from 'tow96-logger';
 
 // utils
 import Queue from 'tow96-amqpwrapper';

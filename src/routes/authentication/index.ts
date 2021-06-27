@@ -5,7 +5,6 @@
  * index for all the authetication routes
  */
 import express from 'express';
-import logger from 'tow96-logger';
 import bcrypt from 'bcryptjs';
 import Queue, { AmqpMessage } from 'tow96-amqpwrapper';
 
@@ -23,7 +22,7 @@ const authenticationRoutes = express.Router();
 
 // login: creates a new refresh token and authtoken for the user
 authenticationRoutes.post('/login', async (req, res) => {
-  // Destructures the
+  // Destructures the data
   const { password, keepSession } = req.body;
 
   try {

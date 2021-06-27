@@ -5,11 +5,9 @@
  * index for all the transaction routes
  */
 import express from 'express';
-import logger from 'tow96-logger';
 import Queue, { AmqpMessage } from 'tow96-amqpwrapper';
 
 // models
-import { Transaction } from '../../Models';
 import transactionIdRoutes from './transactionId';
 
 const transactionQueue = (process.env.TRANSACTION_QUEUE as string) || 'transactionQueue';

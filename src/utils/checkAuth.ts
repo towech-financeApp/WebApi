@@ -30,7 +30,7 @@ const isSuperUser = (token: string): boolean => {
 };
 
 // Checks if a jwt Token is valid
-const isAuth = (token: string, isRefresh: boolean = false): string | object => {
+const isAuth = (token: string, isRefresh = false): string | Record<string, string> => {
   if (!process.env.REFRESH_TOKEN_KEY || !process.env.AUTH_TOKEN_KEY) {
     logger.error('No jwt encryption keys provided');
     throw AmqpMessage.errorMessage('No jwt encryption keys');
@@ -38,14 +38,14 @@ const isAuth = (token: string, isRefresh: boolean = false): string | object => {
 
   try {
     const decodedToken = jwt.verify(token, isRefresh ? process.env.REFRESH_TOKEN_KEY : process.env.AUTH_TOKEN_KEY);
-    return decodedToken;
+    return decodedToken as Record<string, string>;
   } catch (err) {
     throw AmqpMessage.errorMessage('Invalid token', 401);
   }
 };
 
 // Middleware that checks if the requester is an admin
-export const checkAdmin = (req: Request, res: Response, next: NextFunction) => {
+export const checkAdmin = (req: Request, res: Response, next: NextFunction): void => {
   try {
     // Gets the Authorization header
     const authorization = req.headers.authorization;
@@ -74,7 +74,7 @@ export const checkAdmin = (req: Request, res: Response, next: NextFunction) => {
 };
 
 // Middleware that checks if the requester is authenticated
-export const checkAuth = (req: Request, res: Response, next: NextFunction) => {
+export const checkAuth = (req: Request, res: Response, next: NextFunction): void => {
   try {
     const authorization = req.headers.authorization;
 
@@ -92,7 +92,7 @@ export const checkAuth = (req: Request, res: Response, next: NextFunction) => {
 };
 
 // Middleware that checks if the requester has a valid refreshToken
-export const checkRefresh = async (req: Request, res: Response, next: NextFunction) => {
+export const checkRefresh = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     // Gets the refreshToken from the jid cookie
     const refreshToken = req.cookies.jid;

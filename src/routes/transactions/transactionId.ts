@@ -5,7 +5,6 @@
  * all methods for transactions/:transactionid
  */
 import express from 'express';
-import logger from 'tow96-logger';
 import Queue, { AmqpMessage } from 'tow96-amqpwrapper';
 
 // models

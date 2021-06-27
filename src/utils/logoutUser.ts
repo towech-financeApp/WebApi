@@ -11,7 +11,7 @@ import Queue from 'tow96-amqpwrapper';
 
 const userQueue = (process.env.USER_QUEUE as string) || 'userQueue';
 
-const logoutUser = (channel: amqplib.Channel, user: User, token: string | null = null) => {
+const logoutUser = (channel: amqplib.Channel, user: User, token: string | null = null): void => {
   // If a token is provided, only that one is removed
   if (token) {
     if (user.singleSessionToken === token) user.singleSessionToken = undefined;
