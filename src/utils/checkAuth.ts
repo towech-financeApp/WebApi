@@ -81,7 +81,7 @@ export const checkAuth = (req: Request, res: Response, next: NextFunction): void
     if (!authorization) throw AmqpMessage.errorMessage('Invalid token', 403);
 
     // Check if the authToken is valid
-    const decodedToken = isAuth(authorization.split(' ')[1]);
+    const decodedToken: any = isAuth(authorization.split(' ')[1]);
 
     req.user = decodedToken as User;
 
