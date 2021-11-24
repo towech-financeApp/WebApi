@@ -6,6 +6,7 @@
  */
 import express from 'express';
 import Queue, { AmqpMessage } from 'tow96-amqpwrapper';
+import logger from 'tow96-logger';
 
 // models
 import { Wallet } from '../../Models/index';
@@ -18,7 +19,7 @@ const walletIdRoutes = express.Router({ mergeParams: true });
 walletIdRoutes.get('/', async (req, res) => {
   try {
     const params: any = req.params;
-    const corrId = Queue.publishWithReply(req.rabbitChannel!, transactionQueue, {
+    const corrId = await Queue.publishWithReply(req.rabbitChannel!, transactionQueue, {
       status: 200,
       type: 'get-Wallet',
       payload: {
@@ -26,7 +27,7 @@ walletIdRoutes.get('/', async (req, res) => {
         user_id: req.user!._id,
       } as Wallet,
     });
-    const response = await Queue.fetchFromLocalQueue(req.rabbitChannel!, corrId);
+    const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
     res.status(response.status).send(response.payload);
   } catch (e) {
@@ -38,7 +39,7 @@ walletIdRoutes.get('/', async (req, res) => {
 walletIdRoutes.patch('/', async (req, res) => {
   try {
     const params: any = req.params;
-    const corrId = Queue.publishWithReply(req.rabbitChannel!, transactionQueue, {
+    const corrId = await Queue.publishWithReply(req.rabbitChannel!, transactionQueue, {
       status: 200,
       type: 'edit-Wallet',
       payload: {
@@ -47,7 +48,8 @@ walletIdRoutes.patch('/', async (req, res) => {
         name: req.body.name,
       } as Wallet,
     });
-    const response = await Queue.fetchFromLocalQueue(req.rabbitChannel!, corrId);
+    logger.http(corrId);
+    const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
     res.status(response.status).send(response.payload);
   } catch (e) {
@@ -59,7 +61,7 @@ walletIdRoutes.patch('/', async (req, res) => {
 walletIdRoutes.delete('/', async (req, res) => {
   try {
     const params: any = req.params;
-    const corrId = Queue.publishWithReply(req.rabbitChannel!, transactionQueue, {
+    const corrId = await Queue.publishWithReply(req.rabbitChannel!, transactionQueue, {
       status: 200,
       type: 'delete-Wallet',
       payload: {
@@ -67,7 +69,7 @@ walletIdRoutes.delete('/', async (req, res) => {
         user_id: req.user!._id,
       } as Wallet,
     });
-    const response = await Queue.fetchFromLocalQueue(req.rabbitChannel!, corrId);
+    const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
     res.status(response.status).send(response.payload);
   } catch (e) {
@@ -79,7 +81,7 @@ walletIdRoutes.delete('/', async (req, res) => {
 walletIdRoutes.get('/transactions', async (req, res) => {
   try {
     const params: any = req.params;
-    const corrId = Queue.publishWithReply(req.rabbitChannel!, transactionQueue, {
+    const corrId = await Queue.publishWithReply(req.rabbitChannel!, transactionQueue, {
       status: 200,
       type: 'get-Transactions',
       payload: {
@@ -87,10 +89,11 @@ walletIdRoutes.get('/transactions', async (req, res) => {
         user_id: req.user!._id,
       } as Wallet,
     });
-    const response = await Queue.fetchFromLocalQueue(req.rabbitChannel!, corrId);
+    const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
     res.status(response.status).send(response.payload);
   } catch (e) {
+    logger.http(e);
     AmqpMessage.sendHttpError(res, e);
   }
 });

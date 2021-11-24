@@ -20,7 +20,7 @@ transactionIdRoutes.get('/', async (req, res) => {
     const params: any = req.params;
 
     // Passes the data to the Transaction Workers
-    const corrId = Queue.publishWithReply(req.rabbitChannel!, transactionQueue, {
+    const corrId = await Queue.publishWithReply(req.rabbitChannel!, transactionQueue, {
       status: 200,
       type: 'get-Transaction',
       payload: {
@@ -30,7 +30,7 @@ transactionIdRoutes.get('/', async (req, res) => {
     });
 
     // Waits for the response from the workers
-    const response = await Queue.fetchFromLocalQueue(req.rabbitChannel!, corrId);
+    const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
     res.status(response.status).send(response.payload);
   } catch (e) {
@@ -44,7 +44,7 @@ transactionIdRoutes.patch('/', async (req, res) => {
     const params: any = req.params;
 
     // Passes the data to the Transaction Workers
-    const corrId = Queue.publishWithReply(req.rabbitChannel!, transactionQueue, {
+    const corrId = await Queue.publishWithReply(req.rabbitChannel!, transactionQueue, {
       status: 200,
       type: 'edit-Transaction',
       payload: {
@@ -58,7 +58,7 @@ transactionIdRoutes.patch('/', async (req, res) => {
     });
 
     // Waits for the response from the workers
-    const response = await Queue.fetchFromLocalQueue(req.rabbitChannel!, corrId);
+    const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
     res.status(response.status).send(response.payload);
   } catch (e) {
@@ -71,7 +71,7 @@ transactionIdRoutes.delete('/', async (req, res) => {
     const params: any = req.params;
 
     // Passes the data to the Transaction Workers
-    const corrId = Queue.publishWithReply(req.rabbitChannel!, transactionQueue, {
+    const corrId = await Queue.publishWithReply(req.rabbitChannel!, transactionQueue, {
       status: 200,
       type: 'delete-Transaction',
       payload: {
@@ -81,7 +81,7 @@ transactionIdRoutes.delete('/', async (req, res) => {
     });
 
     // Waits for the response from the workers
-    const response = await Queue.fetchFromLocalQueue(req.rabbitChannel!, corrId);
+    const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
     res.status(response.status).send(response.payload);
   } catch (e) {

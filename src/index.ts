@@ -20,9 +20,6 @@ const startServer = async () => {
   const connection = await Queue.startConnection();
   const channel = await Queue.setUpChannelAndExchange(connection);
 
-  // Sets up the exclusive listening queue
-  await channel.assertQueue(Queue.queueName, { exclusive: true });
-
   // Sets up the server
   const app = express();
   app.set('port', process.env.PORT || 3000);

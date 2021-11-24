@@ -23,12 +23,13 @@ walletsRoutes.use('/:walletId', walletIdRoutes);
 // GET root: gets all the wallets of a user
 walletsRoutes.get('/', async (req, res) => {
   // Makes the call to the DB
-  const corrId = Queue.publishWithReply(req.rabbitChannel!, transactionQueue, {
+
+  const corrId = await Queue.publishWithReply(req.rabbitChannel!, transactionQueue, {
     status: 200,
     type: 'get-Wallets',
     payload: { _id: req.user!._id },
   });
-  const response = await Queue.fetchFromLocalQueue(req.rabbitChannel!, corrId);
+  const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
   res.status(response.status).send(response.payload.wallets);
 });
@@ -37,7 +38,7 @@ walletsRoutes.get('/', async (req, res) => {
 walletsRoutes.post('/', async (req, res) => {
   try {
     // Passes the data to the Transaction Workers
-    const corrId = Queue.publishWithReply(req.rabbitChannel!, transactionQueue, {
+    const corrId = await Queue.publishWithReply(req.rabbitChannel!, transactionQueue, {
       status: 200,
       type: 'add-Wallet',
       payload: {
@@ -48,7 +49,7 @@ walletsRoutes.post('/', async (req, res) => {
     });
 
     // Waits for the response from the workers
-    const response = await Queue.fetchFromLocalQueue(req.rabbitChannel!, corrId);
+    const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
     res.status(response.status).send(response.payload);
   } catch (e) {

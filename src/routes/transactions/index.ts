@@ -21,7 +21,7 @@ transactionRoutes.use('/:transactionId', transactionIdRoutes);
 transactionRoutes.post('/', async (req, res) => {
   try {
     // Passes the data to the Transaction Workers
-    const corrId = Queue.publishWithReply(req.rabbitChannel!, transactionQueue, {
+    const corrId = await Queue.publishWithReply(req.rabbitChannel!, transactionQueue, {
       status: 200,
       type: 'add-Transaction',
       payload: {
@@ -34,7 +34,7 @@ transactionRoutes.post('/', async (req, res) => {
     });
 
     // Waits for the response from the workers
-    const response = await Queue.fetchFromLocalQueue(req.rabbitChannel!, corrId);
+    const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
     res.status(response.status).send(response.payload);
   } catch (e) {

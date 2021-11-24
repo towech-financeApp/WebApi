@@ -27,12 +27,12 @@ authenticationRoutes.post('/login', async (req, res) => {
 
   try {
     // Retrieves the user from the DB
-    const corrId = Queue.publishWithReply(req.rabbitChannel!, userQueue, {
+    const corrId = await Queue.publishWithReply(req.rabbitChannel!, userQueue, {
       status: 200,
       type: 'get-byUsername',
       payload: req.body,
     });
-    const response = await Queue.fetchFromLocalQueue(req.rabbitChannel!, corrId);
+    const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
     const user: User = response.payload;
     if (!user) throw AmqpMessage.errorMessage('Bad credentials', 422, { login: 'Bad credentials' });
 
@@ -69,7 +69,11 @@ authenticationRoutes.post('/login', async (req, res) => {
       payload: user,
     });
 
-    res.cookie('jid', refreshToken, { httpOnly: true, domain: process.env.COOKIEDOMAIN || '' });
+    if (process.env.NODE_ENV === 'development') {
+      res.cookie('jid', refreshToken, { httpOnly: true });
+    } else {
+      res.cookie('jid', refreshToken, { httpOnly: true, domain: process.env.COOKIEDOMAIN || '' });
+    }
     res.send({ token: authToken });
   } catch (error) {
     AmqpMessage.sendHttpError(res, error);

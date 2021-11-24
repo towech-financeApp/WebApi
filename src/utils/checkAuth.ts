@@ -102,12 +102,12 @@ export const checkRefresh = async (req: Request, res: Response, next: NextFuncti
     const decodedToken = isAuth(refreshToken, true);
 
     // Retrieves the user from the DB to verify
-    const corrId = Queue.publishWithReply(req.rabbitChannel!, userQueue, {
+    const corrId = await Queue.publishWithReply(req.rabbitChannel!, userQueue, {
       status: 200,
       type: 'get-byId',
       payload: decodedToken,
     });
-    const response = await Queue.fetchFromLocalQueue(req.rabbitChannel!, corrId);
+    const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
     const user: User = response.payload;
     if (!user) throw AmqpMessage.errorMessage('Bad credentials', 422, { login: 'Bad credentials' });
 
