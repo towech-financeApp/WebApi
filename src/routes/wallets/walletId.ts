@@ -77,17 +77,23 @@ walletIdRoutes.delete('/', async (req, res) => {
   }
 });
 
-// GET: /transactions  Gets all the transactions of the wallet
+// GET: /transactions  Gets the transactions of the wallet from a given month, if no month is given, then the current one is selected
 walletIdRoutes.get('/transactions', async (req, res) => {
   try {
+    // Gets the express parameters
     const params: any = req.params;
+
+    // Gets the datamonth, the worker will interpret it
+    const datamonth: string = (req.query.datamonth || '-1').toString();
+
     const corrId = await Queue.publishWithReply(req.rabbitChannel!, transactionQueue, {
       status: 200,
       type: 'get-Transactions',
       payload: {
         _id: params.walletId,
         user_id: req.user!._id,
-      } as Wallet,
+        datamonth: datamonth,
+      },
     });
     const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
