@@ -32,8 +32,7 @@ walletsRoutes.get('/', async (req, res) => {
     const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
     res.status(response.status).send(response.payload.wallets);
-  }
-  catch(e){
+  } catch (e) {
     res.status(500).send(e);
   }
 });

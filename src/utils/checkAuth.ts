@@ -133,10 +133,10 @@ export const validateAdminOrOwner = async (req: Request, res: Response, next: Ne
     // This middleware is intended to be used after the checkAuth, so it will take the data from the req
     const { _id, role } = req.user! as User;
 
-    if (_id !== req.params.userId && role.toUpperCase() !== 'ADMIN') throw AmqpMessage.errorMessage('Invalid user', 403);
+    if (_id !== req.params.userId && role.toUpperCase() !== 'ADMIN')
+      throw AmqpMessage.errorMessage('Invalid user', 403);
 
     next();
-
   } catch (err: any) {
     AmqpMessage.sendHttpError(res, err);
   }

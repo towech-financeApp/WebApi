@@ -5,16 +5,15 @@
  * index for all the users routes
  */
 import express from 'express';
+import Queue, { AmqpMessage } from 'tow96-amqpwrapper';
 
 const userQueue = (process.env.USER_QUEUE as string) || 'userQueue';
 
-// Models
-import { User } from '../../Models';
+// Routes
+import userIdRoutes from './userId';
 
 // utils
-import Queue, { AmqpMessage } from 'tow96-amqpwrapper';
-import { checkAdmin, checkAuth, validateAdminOrOwner } from '../../utils/checkAuth';
-import logger from 'tow96-logger';
+import { checkAdmin, checkAuth } from '../../utils/checkAuth';
 
 const usersRoutes = express.Router();
 
@@ -31,20 +30,26 @@ usersRoutes.post('/register', checkAdmin, async (req, res) => {
   res.status(response.status).send(response.payload);
 });
 
-// user: patches the user information
-usersRoutes.patch('/:userId', checkAuth, validateAdminOrOwner, async (req, res) => {
+// /:userId methods
+usersRoutes.use('/:userId', userIdRoutes);
+
+// PUT: /password Changes the user's password
+userIdRoutes.put('/password', checkAuth, async (req, res) => {
   try {
+    // Gets the userId
     const params: any = req.params;
+
+    // Passes the data to the user workers
     const corrId = await Queue.publishWithReply(req.rabbitChannel!, userQueue, {
       status: 200,
-      type: 'edit-User',
+      type: 'change-Password',
       payload: {
-        _id: params.userId,
-        name: req.body.name,
-      } as User
+        ...req.body,
+        user_id: req.user!._id,
+      },
     });
 
-    logger.http(corrId);
+    // Waits for the response from the workers
     const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
     res.status(response.status).send(response.payload);
