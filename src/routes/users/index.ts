@@ -34,7 +34,7 @@ usersRoutes.post('/register', checkAdmin, async (req, res) => {
 usersRoutes.use('/:userId', userIdRoutes);
 
 // PUT: /password Changes the user's password
-userIdRoutes.put('/password', checkAuth, async (req, res) => {
+usersRoutes.put('/password', checkAuth, async (req, res) => {
   try {
     // Passes the data to the user workers
     const corrId = await Queue.publishWithReply(req.rabbitChannel!, userQueue, {
