@@ -32,10 +32,10 @@ To run the dev server:
 To run this worker on a docker container, first it needs to be built:
 
 For development
-> docker build towechFinance-UserWorker . --target dev
+> docker build towechFinance-WebApi . --target dev
 
 For production
-> docker build towechFinance-UserWorker . --target prod
+> docker build towechFinance-WebApi . --target prod
 
 ### Heroku
 The repository also has the capabilty to be deployed with heroku. Don't forget to add 
@@ -45,10 +45,6 @@ the recursive git submodules to the builpacks.
 The repository has an [example environment](/env.sample) which contains all the 
 necessary env variables for this service to work.
 
-## Future_Improvements
-- [ ] Add sending email with the password when a user is registered
-- [ ] Add user modification
-- [ ] Move the authentication to the webApi
 
 ## Credits
 - Jose Tow [[@Tow96](https://github.com/Tow96)]

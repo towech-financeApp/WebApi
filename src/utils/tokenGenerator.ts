@@ -15,6 +15,7 @@ export default class TokenGenerator {
   static authToken = (user: User): string => {
     return jwt.sign(
       {
+        name: user.name,
         username: user.username,
         _id: user._id,
         role: user.role,

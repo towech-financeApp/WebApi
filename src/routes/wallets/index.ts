@@ -23,15 +23,19 @@ walletsRoutes.use('/:walletId', walletIdRoutes);
 // GET root: gets all the wallets of a user
 walletsRoutes.get('/', async (req, res) => {
   // Makes the call to the DB
+  try {
+    const corrId = await Queue.publishWithReply(req.rabbitChannel!, transactionQueue, {
+      status: 200,
+      type: 'get-Wallets',
+      payload: { _id: req.user!._id },
+    });
+    const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
-  const corrId = await Queue.publishWithReply(req.rabbitChannel!, transactionQueue, {
-    status: 200,
-    type: 'get-Wallets',
-    payload: { _id: req.user!._id },
-  });
-  const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
-
-  res.status(response.status).send(response.payload.wallets);
+    res.status(response.status).send(response.payload.wallets);
+  }
+  catch(e){
+    res.status(500).send(e);
+  }
 });
 
 // POST root: creates a new wallet for the soliciting user
