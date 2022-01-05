@@ -36,9 +36,6 @@ usersRoutes.use('/:userId', userIdRoutes);
 // PUT: /password Changes the user's password
 userIdRoutes.put('/password', checkAuth, async (req, res) => {
   try {
-    // Gets the userId
-    const params: any = req.params;
-
     // Passes the data to the user workers
     const corrId = await Queue.publishWithReply(req.rabbitChannel!, userQueue, {
       status: 200,
