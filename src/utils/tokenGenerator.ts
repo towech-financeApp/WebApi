@@ -38,4 +38,17 @@ export default class TokenGenerator {
       },
     );
   };
+
+  static passwordToken = (id: string): string => {
+    return jwt.sign(
+      {
+        id: id,
+        content: 'passwordReset',
+      },
+      process.env.PASSWORD_TOKEN_KEY as string,
+      {
+        expiresIn: '24h',
+      },
+    );
+  };
 }

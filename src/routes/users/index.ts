@@ -1,4 +1,4 @@
-/** index.js
+/** index.ts
  * Copyright (c) 2021, Jose Tow
  * All rights reserved
  *
@@ -14,6 +14,7 @@ import userIdRoutes from './userId';
 
 // utils
 import { checkAdmin, checkAuth } from '../../utils/checkAuth';
+import resetRoutes from './reset';
 
 const usersRoutes = express.Router();
 
@@ -54,5 +55,7 @@ usersRoutes.put('/password', checkAuth, async (req, res) => {
     AmqpMessage.sendHttpError(res, e);
   }
 });
+
+usersRoutes.use('/reset', resetRoutes);
 
 export default usersRoutes;
