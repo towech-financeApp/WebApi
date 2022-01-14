@@ -19,6 +19,7 @@ export default class TokenGenerator {
         username: user.username,
         _id: user._id,
         role: user.role,
+        accountConfirmed: user.accountConfirmed,
       },
       process.env.AUTH_TOKEN_KEY as string,
       {

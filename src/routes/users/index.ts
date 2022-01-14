@@ -56,6 +56,31 @@ usersRoutes.put('/password', checkAuth, async (req, res) => {
   }
 });
 
+// PasswordReset routes
 usersRoutes.use('/reset', resetRoutes);
+
+// PUT: /email Changes the user's email
+usersRoutes.put('/email', checkAuth, async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    // Passes the data to the user workers
+    const corrId = await Queue.publishWithReply(req.rabbitChannel!, userQueue, {
+      status: 200,
+      type: 'change-email',
+      payload: {
+        user_id: req.user!._id,
+        email: email,
+      },
+    });
+
+    // Waits for the response
+    const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
+
+    res.status(response.status).send(response.payload);
+  } catch (e) {
+    AmqpMessage.sendHttpError(res, e);
+  }
+});
 
 export default usersRoutes;
