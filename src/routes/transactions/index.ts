@@ -10,6 +10,9 @@ import Queue, { AmqpMessage } from 'tow96-amqpwrapper';
 // models
 import transactionIdRoutes from './transactionId';
 
+// Utils
+import middlewares from '../../utils/middlewares';
+
 const transactionQueue = (process.env.TRANSACTION_QUEUE as string) || 'transactionQueue';
 
 const transactionRoutes = express.Router();
@@ -18,7 +21,7 @@ const transactionRoutes = express.Router();
 transactionRoutes.use('/:transactionId', transactionIdRoutes);
 
 // POST root: creates a new transaction for the soliciting user's wallet
-transactionRoutes.post('/', async (req, res) => {
+transactionRoutes.post('/', middlewares.checkConfirmed, async (req, res) => {
   try {
     // Passes the data to the Transaction Workers
     const corrId = await Queue.publishWithReply(req.rabbitChannel!, transactionQueue, {

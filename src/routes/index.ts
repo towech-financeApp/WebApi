@@ -14,14 +14,14 @@ import usersRoutes from './users';
 import walletsRoutes from './wallets';
 
 // Utils
-import { checkAuth } from '../utils/checkAuth';
+import middlewares from '../utils/middlewares';
 
 const router = express.Router();
 
 router.use('/authentication', cookieParser(), authenticationRoutes);
-router.use('/transactions', checkAuth, transactionRoutes);
+router.use('/transactions', middlewares.checkAuth, transactionRoutes);
 router.use('/users', usersRoutes);
-router.use('/wallets', checkAuth, walletsRoutes);
+router.use('/wallets', middlewares.checkAuth, walletsRoutes);
 
 // The rest of the Routes will return a 404 error
 router.use('*', (__, res) => {

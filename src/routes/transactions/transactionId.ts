@@ -10,6 +10,9 @@ import Queue, { AmqpMessage } from 'tow96-amqpwrapper';
 // models
 import { Transaction } from '../../Models';
 
+// utils
+import middlewares from '../../utils/middlewares';
+
 const transactionQueue = (process.env.TRANSACTION_QUEUE as string) || 'transactionQueue';
 
 const transactionIdRoutes = express.Router({ mergeParams: true });
@@ -39,7 +42,7 @@ transactionIdRoutes.get('/', async (req, res) => {
 });
 
 // PATCH: / Edits the requested transaction
-transactionIdRoutes.patch('/', async (req, res) => {
+transactionIdRoutes.patch('/', middlewares.checkConfirmed, async (req, res) => {
   try {
     const params: any = req.params;
 
@@ -66,7 +69,7 @@ transactionIdRoutes.patch('/', async (req, res) => {
   }
 });
 
-transactionIdRoutes.delete('/', async (req, res) => {
+transactionIdRoutes.delete('/', middlewares.checkConfirmed, async (req, res) => {
   try {
     const params: any = req.params;
 

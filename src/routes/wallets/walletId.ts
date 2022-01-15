@@ -11,12 +11,15 @@ import logger from 'tow96-logger';
 // models
 import { Wallet } from '../../Models/index';
 
+// utils
+import middlewares from '../../utils/middlewares';
+
 const transactionQueue = (process.env.TRANSACTION_QUEUE as string) || 'transactionQueue';
 
 const walletIdRoutes = express.Router({ mergeParams: true });
 
 // GET: Get the wallet by it's ID
-walletIdRoutes.get('/', async (req, res) => {
+walletIdRoutes.get('/', middlewares.checkConfirmed, async (req, res) => {
   try {
     const params: any = req.params;
     const corrId = await Queue.publishWithReply(req.rabbitChannel!, transactionQueue, {
@@ -36,7 +39,7 @@ walletIdRoutes.get('/', async (req, res) => {
 });
 
 // PATCH: Change the wallet's data (except the money it holds)
-walletIdRoutes.patch('/', async (req, res) => {
+walletIdRoutes.patch('/', middlewares.checkConfirmed, async (req, res) => {
   try {
     const params: any = req.params;
     const corrId = await Queue.publishWithReply(req.rabbitChannel!, transactionQueue, {
@@ -58,7 +61,7 @@ walletIdRoutes.patch('/', async (req, res) => {
 });
 
 // DELETE: Deletes a wallet and all its transactions
-walletIdRoutes.delete('/', async (req, res) => {
+walletIdRoutes.delete('/', middlewares.checkConfirmed, async (req, res) => {
   try {
     const params: any = req.params;
     const corrId = await Queue.publishWithReply(req.rabbitChannel!, transactionQueue, {

@@ -13,6 +13,9 @@ import { Wallet } from '../../Models/index';
 // routes
 import walletIdRoutes from './walletId';
 
+// utils
+import middlewares from '../../utils/middlewares';
+
 const transactionQueue = (process.env.TRANSACTION_QUEUE as string) || 'transactionQueue';
 
 const walletsRoutes = express.Router();
@@ -38,7 +41,7 @@ walletsRoutes.get('/', async (req, res) => {
 });
 
 // POST root: creates a new wallet for the soliciting user
-walletsRoutes.post('/', async (req, res) => {
+walletsRoutes.post('/', middlewares.checkConfirmed, async (req, res) => {
   try {
     // Passes the data to the Transaction Workers
     const corrId = await Queue.publishWithReply(req.rabbitChannel!, transactionQueue, {

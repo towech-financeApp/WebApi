@@ -13,7 +13,7 @@ import { User } from '../../Models';
 
 // utils
 import TokenGenerator from '../../utils/tokenGenerator';
-import { checkRefresh } from '../../utils/checkAuth';
+import middlewares from '../../utils/middlewares';
 import logoutUser from '../../utils/logoutUser';
 
 const userQueue = (process.env.USER_QUEUE as string) || 'userQueue';
@@ -81,14 +81,14 @@ authenticationRoutes.post('/login', async (req, res) => {
 });
 
 // refresh: if a valid refreshToken is provided, creates a new authToken
-authenticationRoutes.post('/refresh', checkRefresh, async (req, res) => {
+authenticationRoutes.post('/refresh', middlewares.checkRefresh, async (req, res) => {
   const authToken = TokenGenerator.authToken(req.user!);
 
   res.send({ token: authToken });
 });
 
 // logout: if a valid refreshToken is provided, removes the refreshToken from the user
-authenticationRoutes.post('/logout', checkRefresh, async (req, res) => {
+authenticationRoutes.post('/logout', middlewares.checkRefresh, async (req, res) => {
   try {
     // Logs out the refreshToken
     logoutUser(req.rabbitChannel!, req.user!, req.cookies.jid);
@@ -101,7 +101,7 @@ authenticationRoutes.post('/logout', checkRefresh, async (req, res) => {
 });
 
 // logout-all: if a valid refreshToken is provided, removes all the tokens from the user
-authenticationRoutes.post('/logout-all', checkRefresh, async (req, res) => {
+authenticationRoutes.post('/logout-all', middlewares.checkRefresh, async (req, res) => {
   try {
     // Updates the user by removing all tokens
     logoutUser(req.rabbitChannel!, req.user!);

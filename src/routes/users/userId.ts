@@ -13,13 +13,13 @@ const userQueue = (process.env.USER_QUEUE as string) || 'userQueue';
 import { User } from '../../Models';
 
 // utils
-import { checkAuth, validateAdminOrOwner } from '../../utils/checkAuth';
+import middlewares from '../../utils/middlewares';
 import logger from 'tow96-logger';
 
 const userIdRoutes = express.Router({ mergeParams: true });
 
 // PATCH: / patches the user information
-userIdRoutes.patch('/', checkAuth, validateAdminOrOwner, async (req, res) => {
+userIdRoutes.patch('/', middlewares.checkAuth, middlewares.validateAdminOrOwner, async (req, res) => {
   try {
     const params: any = req.params;
     const corrId = await Queue.publishWithReply(req.rabbitChannel!, userQueue, {

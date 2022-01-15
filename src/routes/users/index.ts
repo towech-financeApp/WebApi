@@ -13,13 +13,13 @@ const userQueue = (process.env.USER_QUEUE as string) || 'userQueue';
 import userIdRoutes from './userId';
 
 // utils
-import { checkAdmin, checkAuth } from '../../utils/checkAuth';
+import middlewares from '../../utils/middlewares';
 import resetRoutes from './reset';
 
 const usersRoutes = express.Router();
 
 // register: creates a new user only admins and the superUser are allowed to create users
-usersRoutes.post('/register', checkAdmin, async (req, res) => {
+usersRoutes.post('/register', middlewares.checkAdmin, async (req, res) => {
   const corrId = await Queue.publishWithReply(req.rabbitChannel!, userQueue, {
     status: 200,
     type: 'register',
@@ -35,7 +35,7 @@ usersRoutes.post('/register', checkAdmin, async (req, res) => {
 usersRoutes.use('/:userId', userIdRoutes);
 
 // PUT: /password Changes the user's password
-usersRoutes.put('/password', checkAuth, async (req, res) => {
+usersRoutes.put('/password', middlewares.checkAuth, async (req, res) => {
   try {
     // Passes the data to the user workers
     const corrId = await Queue.publishWithReply(req.rabbitChannel!, userQueue, {
@@ -60,7 +60,7 @@ usersRoutes.put('/password', checkAuth, async (req, res) => {
 usersRoutes.use('/reset', resetRoutes);
 
 // PUT: /email Changes the user's email
-usersRoutes.put('/email', checkAuth, async (req, res) => {
+usersRoutes.put('/email', middlewares.checkAuth, async (req, res) => {
   const { email } = req.body;
 
   try {
