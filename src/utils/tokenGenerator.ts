@@ -52,4 +52,17 @@ export default class TokenGenerator {
       },
     );
   };
+
+  static verificationToken = (id: string, email: string): string => {
+    return jwt.sign(
+      {
+        user_id: id,
+        email: email,
+      },
+      process.env.EMAILVERIFICATION_TOKEN_KEY as string,
+      {
+        expiresIn: '7d',
+      },
+    );
+  };
 }

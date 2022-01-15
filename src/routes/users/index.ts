@@ -7,15 +7,15 @@
 import express from 'express';
 import Queue, { AmqpMessage } from 'tow96-amqpwrapper';
 
-const userQueue = (process.env.USER_QUEUE as string) || 'userQueue';
-
 // Routes
 import userIdRoutes from './userId';
 
 // utils
 import middlewares from '../../utils/middlewares';
 import resetRoutes from './reset';
+import TokenGenerator from '../../utils/tokenGenerator';
 
+const userQueue = (process.env.USER_QUEUE as string) || 'userQueue';
 const usersRoutes = express.Router();
 
 // register: creates a new user only admins and the superUser are allowed to create users
@@ -59,9 +59,37 @@ usersRoutes.put('/password', middlewares.checkAuth, async (req, res) => {
 // PasswordReset routes
 usersRoutes.use('/reset', resetRoutes);
 
+// GET: /email  Resends the verification email
+usersRoutes.get('/email', middlewares.checkAuth, async (req, res) => {
+  try {
+    // Creates the token
+    const token = TokenGenerator.verificationToken(req.user!._id, req.user!.username);
+
+    // Passes the userId to the user workers
+    const corrId = await Queue.publishWithReply(req.rabbitChannel!, userQueue, {
+      status: 200,
+      type: 'resend-emailVerify',
+      payload: {
+        user_id: req.user!._id,
+        token: token,
+      },
+    });
+
+    // Waits for the response from the workers
+    const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
+
+    res.status(response.status).send(response.payload);
+  } catch (e) {
+    AmqpMessage.sendHttpError(res, e);
+  }
+});
+
 // PUT: /email Changes the user's email
 usersRoutes.put('/email', middlewares.checkAuth, async (req, res) => {
   const { email } = req.body;
+
+  // Creates the token
+  const token = TokenGenerator.verificationToken(req.user!._id, email);
 
   try {
     // Passes the data to the user workers
@@ -71,6 +99,7 @@ usersRoutes.put('/email', middlewares.checkAuth, async (req, res) => {
       payload: {
         user_id: req.user!._id,
         email: email,
+        token: token,
       },
     });
 

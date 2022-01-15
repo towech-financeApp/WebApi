@@ -7,6 +7,7 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import Queue, { AmqpMessage } from 'tow96-amqpwrapper';
+import jwt from 'jsonwebtoken';
 
 // Models
 import { User } from '../../Models';
@@ -20,7 +21,7 @@ const userQueue = (process.env.USER_QUEUE as string) || 'userQueue';
 
 const authenticationRoutes = express.Router();
 
-// login: creates a new refresh token and authtoken for the user
+// POST: /login  creates a new refresh token and authtoken for the user
 authenticationRoutes.post('/login', async (req, res) => {
   // Destructures the data
   const { password, keepSession } = req.body;
@@ -80,14 +81,14 @@ authenticationRoutes.post('/login', async (req, res) => {
   }
 });
 
-// refresh: if a valid refreshToken is provided, creates a new authToken
+// POST: /refresh  if a valid refreshToken is provided, creates a new authToken
 authenticationRoutes.post('/refresh', middlewares.checkRefresh, async (req, res) => {
   const authToken = TokenGenerator.authToken(req.user!);
 
   res.send({ token: authToken });
 });
 
-// logout: if a valid refreshToken is provided, removes the refreshToken from the user
+// POST: /logout  if a valid refreshToken is provided, removes the refreshToken from the user
 authenticationRoutes.post('/logout', middlewares.checkRefresh, async (req, res) => {
   try {
     // Logs out the refreshToken
@@ -100,7 +101,7 @@ authenticationRoutes.post('/logout', middlewares.checkRefresh, async (req, res) 
   }
 });
 
-// logout-all: if a valid refreshToken is provided, removes all the tokens from the user
+// POST: /logout-all  if a valid refreshToken is provided, removes all the tokens from the user
 authenticationRoutes.post('/logout-all', middlewares.checkRefresh, async (req, res) => {
   try {
     // Updates the user by removing all tokens
@@ -108,6 +109,32 @@ authenticationRoutes.post('/logout-all', middlewares.checkRefresh, async (req, r
 
     res.clearCookie('jid');
     res.sendStatus(204);
+  } catch (err) {
+    AmqpMessage.sendHttpError(res, err);
+  }
+});
+
+// PATCH: /verify/:token  verifies an email
+authenticationRoutes.patch('/verify/:token', async (req, res) => {
+  // Gets the token
+  const token = req.params.token;
+
+  try {
+    // extracts and verifies the payload
+    try {
+      const payload: any = jwt.verify(token, process.env.EMAILVERIFICATION_TOKEN_KEY || '');
+
+      // Queries the DB, doesn't wait for response
+      Queue.publishSimple(req.rabbitChannel!, userQueue, {
+        status: 200,
+        type: 'verify-client',
+        payload: payload,
+      });
+
+      res.sendStatus(204);
+    } catch (e) {
+      throw AmqpMessage.errorMessage('Invalid token', 422);
+    }
   } catch (err) {
     AmqpMessage.sendHttpError(res, err);
   }
