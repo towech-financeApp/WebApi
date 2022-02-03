@@ -18,7 +18,24 @@ import TokenGenerator from '../../utils/tokenGenerator';
 const userQueue = (process.env.USER_QUEUE as string) || 'userQueue';
 const usersRoutes = express.Router();
 
-// register: creates a new user only admins and the superUser are allowed to create users
+// GET: /  Gets a list of all the users if the requester is an admin or the superuser
+usersRoutes.get('/', middlewares.checkAdmin, async (req, res) => {
+  try {
+    const corrId = await Queue.publishWithReply(req.rabbitChannel!, userQueue, {
+      status: 200,
+      type: 'get-users',
+      payload: null,
+    });
+
+    const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
+
+    res.status(response.status).send(response.payload);
+  } catch (e) {
+    AmqpMessage.sendHttpError(res, e);
+  }
+});
+
+// POST: /register  Creates a new user only admins and the superUser are allowed to create users
 usersRoutes.post('/register', middlewares.checkAdmin, async (req, res) => {
   const corrId = await Queue.publishWithReply(req.rabbitChannel!, userQueue, {
     status: 200,
