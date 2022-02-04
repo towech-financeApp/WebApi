@@ -9,6 +9,7 @@ import cookieParser from 'cookie-parser';
 
 // Routes
 import authenticationRoutes from './authentication';
+import categoryRoutes from './categories';
 import transactionRoutes from './transactions';
 import usersRoutes from './users';
 import walletsRoutes from './wallets';
@@ -22,6 +23,7 @@ router.use('/authentication', cookieParser(), authenticationRoutes);
 router.use('/transactions', middlewares.checkAuth, transactionRoutes);
 router.use('/users', usersRoutes);
 router.use('/wallets', middlewares.checkAuth, walletsRoutes);
+router.use('/categories', middlewares.checkAuth, categoryRoutes);
 
 // The rest of the Routes will return a 404 error
 router.use('*', (__, res) => {
