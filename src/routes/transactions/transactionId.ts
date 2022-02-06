@@ -54,6 +54,9 @@ transactionIdRoutes.patch('/', middlewares.checkConfirmed, async (req, res) => {
         _id: params.transactionId,
         user_id: req.user!._id,
         wallet_id: req.body.wallet_id,
+        category: {
+          _id: req.body.category_id
+        },
         concept: req.body.concept,
         amount: req.body.amount,
         transactionDate: req.body.transactionDate,
@@ -69,6 +72,7 @@ transactionIdRoutes.patch('/', middlewares.checkConfirmed, async (req, res) => {
   }
 });
 
+// DELETE: / Removes the transaction
 transactionIdRoutes.delete('/', middlewares.checkConfirmed, async (req, res) => {
   try {
     const params: any = req.params;

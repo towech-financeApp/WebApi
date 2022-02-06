@@ -30,6 +30,9 @@ transactionRoutes.post('/', middlewares.checkConfirmed, async (req, res) => {
       payload: {
         user_id: req.user!._id,
         wallet_id: req.body.wallet_id,
+        category: {
+          _id: req.body.category_id
+        },
         concept: req.body.concept,
         amount: req.body.amount,
         transactionDate: req.body.transactionDate,
