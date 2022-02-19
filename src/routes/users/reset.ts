@@ -41,7 +41,7 @@ resetRoutes.post('/', async (req, res) => {
       status: 200,
       type: 'password-reset',
       payload: {
-        id: db_user._id,
+        _id: db_user._id,
         token: token,
       },
     });

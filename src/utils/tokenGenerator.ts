@@ -9,10 +9,10 @@ dotenv.config();
 
 // Libraries
 import jwt from 'jsonwebtoken';
-import { User } from '../Models';
+import { Objects } from '../Models';
 
 export default class TokenGenerator {
-  static authToken = (user: User): string => {
+  static authToken = (user: Objects.User.BaseUser): string => {
     return jwt.sign(
       {
         name: user.name,
@@ -28,7 +28,7 @@ export default class TokenGenerator {
     );
   };
 
-  static refreshToken = (user: User, keepSession: boolean): string => {
+  static refreshToken = (user: Objects.User.BaseUser, keepSession: boolean): string => {
     return jwt.sign(
       {
         _id: user._id,

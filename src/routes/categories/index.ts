@@ -8,7 +8,7 @@ import express from 'express';
 import Queue from 'tow96-amqpwrapper';
 
 // Models
-import { Category } from '../../Models';
+import { Objects, Requests, Responses } from '../../Models';
 
 const categoryQueue = (process.env.CATEGORY_QUEUE as string) || 'categoryQueue';
 
@@ -22,15 +22,15 @@ categoryRoutes.get('/', async (req, res) => {
       type: 'get-all',
       payload: {
         user_id: req.user!._id,
-      },
+      } as Requests.WorkerGetAllCategories,
     });
     const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
     // Sorts the received categories
-    const incomeCats: Category[] = [];
-    const expenseCats: Category[] = [];
+    const incomeCats: Objects.Category[] = [];
+    const expenseCats: Objects.Category[] = [];
 
-    response.payload.map((category: Category) => {
+    response.payload.map((category: Objects.Category) => {
       switch (category.type) {
         case 'Income':
           incomeCats.push(category);
@@ -41,7 +41,7 @@ categoryRoutes.get('/', async (req, res) => {
       }
     });
 
-    res.status(response.status).send({ Income: incomeCats, Expense: expenseCats });
+    res.status(response.status).send({ Income: incomeCats, Expense: expenseCats } as Responses.GetCategoriesResponse);
   } catch (e) {
     res.status(500).send(e);
   }

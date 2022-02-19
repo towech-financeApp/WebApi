@@ -9,7 +9,7 @@ import Queue, { AmqpMessage } from 'tow96-amqpwrapper';
 import logger from 'tow96-logger';
 
 // models
-import { Wallet } from '../../Models/index';
+import { Objects, Requests } from '../../Models/index';
 
 // utils
 import middlewares from '../../utils/middlewares';
@@ -28,11 +28,11 @@ walletIdRoutes.get('/', middlewares.checkConfirmed, async (req, res) => {
       payload: {
         _id: params.walletId,
         user_id: req.user!._id,
-      } as Wallet,
+      } as Objects.Wallet,
     });
     const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
-    res.status(response.status).send(response.payload);
+    res.status(response.status).send(response.payload as Objects.Wallet);
   } catch (e) {
     AmqpMessage.sendHttpError(res, e);
   }
@@ -49,12 +49,12 @@ walletIdRoutes.patch('/', middlewares.checkConfirmed, async (req, res) => {
         _id: params.walletId,
         user_id: req.user!._id,
         name: req.body.name,
-      } as Wallet,
+      } as Objects.Wallet,
     });
     logger.http(corrId);
     const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
-    res.status(response.status).send(response.payload);
+    res.status(response.status).send(response.payload as Objects.Wallet);
   } catch (e) {
     AmqpMessage.sendHttpError(res, e);
   }
@@ -70,11 +70,11 @@ walletIdRoutes.delete('/', middlewares.checkConfirmed, async (req, res) => {
       payload: {
         _id: params.walletId,
         user_id: req.user!._id,
-      } as Wallet,
+      } as Objects.Wallet,
     });
     const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
-    res.status(response.status).send(response.payload);
+    res.status(response.status).send(response.payload as Objects.Wallet);
   } catch (e) {
     AmqpMessage.sendHttpError(res, e);
   }
@@ -96,11 +96,11 @@ walletIdRoutes.get('/transactions', async (req, res) => {
         _id: params.walletId,
         user_id: req.user!._id,
         datamonth: datamonth,
-      },
+      } as Requests.WorkerGetTransactions,
     });
     const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
-    res.status(response.status).send(response.payload);
+    res.status(response.status).send(response.payload.transactions as Objects.Transaction[]);
   } catch (e) {
     logger.http(e);
     AmqpMessage.sendHttpError(res, e);

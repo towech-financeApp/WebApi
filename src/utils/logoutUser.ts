@@ -5,27 +5,49 @@
  * Utility that removes the refresh tokens from a user if a token is provided,
  * only removes it, otherwise, removes all tokens
  */
-import { User } from '../Models';
+
+// Libraries
 import amqplib from 'amqplib';
 import Queue from 'tow96-amqpwrapper';
 
+// Models
+import { Objects, Requests } from '../Models';
+
 const userQueue = (process.env.USER_QUEUE as string) || 'userQueue';
 
-const logoutUser = (channel: amqplib.Channel, user: User, token: string | null = null): void => {
+const logoutUser = async (
+  channel: amqplib.Channel,
+  user: Objects.User.BaseUser,
+  token: string | null = null,
+): Promise<void> => {
   // If a token is provided, only that one is removed
+
+  // Retrieves the tokens from the DB to verify
+  const corrId = await Queue.publishWithReply(channel, userQueue, {
+    status: 200,
+    type: 'get-byId',
+    payload: {
+      _id: user._id,
+    } as Requests.WorkerGetUserById,
+  });
+  const response = await Queue.fetchFromQueue(channel, corrId, corrId);
+  const bUser: Objects.User.BackendUser = response.payload;
+
+  // If a token is provided, it only removes that token, otherwise, removes all of them
   if (token) {
-    if (user.singleSessionToken === token) user.singleSessionToken = undefined;
-    user.refreshTokens = user.refreshTokens.filter((rToken) => rToken !== token);
+    // Removes the token from the user
+    if (bUser.singleSessionToken === token) bUser.singleSessionToken = undefined;
+    if (bUser.refreshTokens) bUser.refreshTokens = bUser.refreshTokens.filter((rToken) => rToken !== token);
   } else {
-    user.refreshTokens = [];
-    user.singleSessionToken = undefined;
+    bUser.refreshTokens = [];
+    bUser.singleSessionToken = undefined;
   }
 
   // Updates de user
   Queue.publishSimple(channel, userQueue, {
     status: 200,
     type: 'log',
-    payload: user,
+    payload: bUser as Objects.User.FrontendUser,
   });
 };
 

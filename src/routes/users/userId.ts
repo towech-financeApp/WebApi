@@ -4,17 +4,20 @@
  *
  * all methods for users/:userId
  */
+
+// Libraries
 import express from 'express';
 import Queue, { AmqpMessage } from 'tow96-amqpwrapper';
+import logger from 'tow96-logger';
 
 const userQueue = (process.env.USER_QUEUE as string) || 'userQueue';
 
 // Models
-import { User } from '../../Models';
+import { Objects } from '../../Models';
 
 // utils
 import middlewares from '../../utils/middlewares';
-import logger from 'tow96-logger';
+import UserConverter from '../../utils/userConverter';
 
 const userIdRoutes = express.Router({ mergeParams: true });
 
@@ -28,13 +31,16 @@ userIdRoutes.patch('/', middlewares.checkAuth, middlewares.validateAdminOrOwner,
       payload: {
         _id: params.userId,
         name: req.body.name,
-      } as User,
+      } as Objects.User.FrontendUser,
     });
 
     logger.http(corrId);
     const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
+    const user: Objects.User.BackendUser = response.payload;
 
-    res.status(response.status).send(response.payload);
+    const output = UserConverter.convertToBaseUser(user);
+
+    res.status(response.status).send(output);
   } catch (e) {
     AmqpMessage.sendHttpError(res, e);
   }

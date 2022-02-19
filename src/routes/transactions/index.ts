@@ -4,10 +4,15 @@
  *
  * index for all the transaction routes
  */
+
+// Libraries
 import express from 'express';
 import Queue, { AmqpMessage } from 'tow96-amqpwrapper';
 
-// models
+// Models
+import { Objects } from '../../Models';
+
+// routes
 import transactionIdRoutes from './transactionId';
 
 // Utils
@@ -31,18 +36,18 @@ transactionRoutes.post('/', middlewares.checkConfirmed, async (req, res) => {
         user_id: req.user!._id,
         wallet_id: req.body.wallet_id,
         category: {
-          _id: req.body.category_id
+          _id: req.body.category_id,
         },
         concept: req.body.concept,
         amount: req.body.amount,
         transactionDate: req.body.transactionDate,
-      },
+      } as Objects.Transaction,
     });
 
     // Waits for the response from the workers
     const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
-    res.status(response.status).send(response.payload);
+    res.status(response.status).send(response.payload as Objects.Transaction[]);
   } catch (e) {
     AmqpMessage.sendHttpError(res, e);
   }

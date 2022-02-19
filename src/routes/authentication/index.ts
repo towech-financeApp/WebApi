@@ -10,7 +10,7 @@ import Queue, { AmqpMessage } from 'tow96-amqpwrapper';
 import jwt from 'jsonwebtoken';
 
 // Models
-import { User } from '../../Models';
+import { Objects, Requests, Responses } from '../../Models';
 
 // utils
 import TokenGenerator from '../../utils/tokenGenerator';
@@ -23,30 +23,32 @@ const authenticationRoutes = express.Router();
 
 // POST: /login  creates a new refresh token and authtoken for the user
 authenticationRoutes.post('/login', async (req, res) => {
-  // Destructures the data
-  const { password, keepSession } = req.body;
+  // Converts the body to the proper interface for ease of use
+  const request: Requests.LoginRequest = req.body;
 
   try {
     // Retrieves the user from the DB
     const corrId = await Queue.publishWithReply(req.rabbitChannel!, userQueue, {
       status: 200,
       type: 'get-byUsername',
-      payload: req.body,
+      payload: {
+        username: request.username,
+      } as Requests.WorkerGetUserByUsername,
     });
     const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
-    const user: User = response.payload;
+    const user: Objects.User.BackendUser = response.payload;
     if (!user) throw AmqpMessage.errorMessage('Bad credentials', 422, { login: 'Bad credentials' });
 
     // Compares the password
-    const validPassword = await bcrypt.compare(password, user.password!);
+    const validPassword = await bcrypt.compare(request.password, user.password!);
     if (!validPassword) throw AmqpMessage.errorMessage('Bad credentials', 422, { login: 'Bad credentials' });
 
     // Create tokens
     const authToken = TokenGenerator.authToken(user);
-    const refreshToken = TokenGenerator.refreshToken(user, keepSession);
+    const refreshToken = TokenGenerator.refreshToken(user, request.keepSession);
 
     // Adds the refreshToken to the user
-    if (keepSession) {
+    if (request.keepSession) {
       // Creates an empty array if there are no tokens
       if (!user.refreshTokens) {
         user.refreshTokens = [];
@@ -67,7 +69,7 @@ authenticationRoutes.post('/login', async (req, res) => {
     Queue.publishSimple(req.rabbitChannel!, userQueue, {
       status: 200,
       type: 'log',
-      payload: user,
+      payload: user as Objects.User.FrontendUser,
     });
 
     if (process.env.NODE_ENV === 'development') {
@@ -75,7 +77,7 @@ authenticationRoutes.post('/login', async (req, res) => {
     } else {
       res.cookie('jid', refreshToken, { httpOnly: true, domain: process.env.COOKIEDOMAIN || '' });
     }
-    res.send({ token: authToken });
+    res.send({ token: authToken } as Responses.AuthenticationResponse);
   } catch (error) {
     AmqpMessage.sendHttpError(res, error);
   }
@@ -85,7 +87,7 @@ authenticationRoutes.post('/login', async (req, res) => {
 authenticationRoutes.post('/refresh', middlewares.checkRefresh, async (req, res) => {
   const authToken = TokenGenerator.authToken(req.user!);
 
-  res.send({ token: authToken });
+  res.send({ token: authToken } as Responses.AuthenticationResponse);
 });
 
 // POST: /logout  if a valid refreshToken is provided, removes the refreshToken from the user
@@ -127,8 +129,8 @@ authenticationRoutes.patch('/verify/:token', async (req, res) => {
       // Queries the DB, doesn't wait for response
       Queue.publishSimple(req.rabbitChannel!, userQueue, {
         status: 200,
-        type: 'verify-client',
-        payload: payload,
+        type: 'verify-email',
+        payload: payload as Requests.WorkerChangeEmail,
       });
 
       res.sendStatus(204);

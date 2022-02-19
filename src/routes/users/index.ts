@@ -7,16 +7,26 @@
 import express from 'express';
 import Queue, { AmqpMessage } from 'tow96-amqpwrapper';
 
-// Routes
+// // Routes
 import userIdRoutes from './userId';
+// import resetRoutes from './reset';
+
+// Models
+import { Objects, Requests } from '../../Models';
 
 // utils
 import middlewares from '../../utils/middlewares';
-import resetRoutes from './reset';
 import TokenGenerator from '../../utils/tokenGenerator';
+import UserConverter from '../../utils/userConverter';
 
 const userQueue = (process.env.USER_QUEUE as string) || 'userQueue';
 const usersRoutes = express.Router();
+
+// /:userId methods
+usersRoutes.use('/:userId', userIdRoutes);
+
+// // PasswordReset routes
+// usersRoutes.use('/reset', resetRoutes);
 
 // GET: /  Gets a list of all the users if the requester is an admin or the superuser
 usersRoutes.get('/', middlewares.checkAdmin, async (req, res) => {
@@ -28,8 +38,15 @@ usersRoutes.get('/', middlewares.checkAdmin, async (req, res) => {
     });
 
     const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
+    const users: Objects.User.BackendUser[] = response.payload;
 
-    res.status(response.status).send(response.payload);
+    const output: Objects.User.BaseUser[] = [];
+
+    users.map((user) => {
+      output.push(UserConverter.convertToBaseUser(user));
+    });
+
+    res.status(response.status).send(output);
   } catch (e) {
     AmqpMessage.sendHttpError(res, e);
   }
@@ -40,16 +57,20 @@ usersRoutes.post('/register', middlewares.checkAdmin, async (req, res) => {
   const corrId = await Queue.publishWithReply(req.rabbitChannel!, userQueue, {
     status: 200,
     type: 'register',
-    payload: req.body,
+    payload: {
+      email: req.body.email,
+      name: req.body.name,
+      role: req.body.role,
+    } as Requests.WorkerRegisterUser,
   });
 
   const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
+  const user: Objects.User.BackendUser = response.payload;
 
-  res.status(response.status).send(response.payload);
+  const output = UserConverter.convertToBaseUser(user);
+
+  res.status(response.status).send(output);
 });
-
-// /:userId methods
-usersRoutes.use('/:userId', userIdRoutes);
 
 // PUT: /password Changes the user's password
 usersRoutes.put('/password', middlewares.checkAuth, async (req, res) => {
@@ -59,9 +80,11 @@ usersRoutes.put('/password', middlewares.checkAuth, async (req, res) => {
       status: 200,
       type: 'change-Password',
       payload: {
-        ...req.body,
-        user_id: req.user!._id,
-      },
+        _id: req.user!._id,
+        confirmPassword: req.body.confirmPassword,
+        newPassword: req.body.newPassword,
+        oldPassword: req.body.oldPassword,
+      } as Requests.WorkerChangePassword,
     });
 
     // Waits for the response from the workers
@@ -72,9 +95,6 @@ usersRoutes.put('/password', middlewares.checkAuth, async (req, res) => {
     AmqpMessage.sendHttpError(res, e);
   }
 });
-
-// PasswordReset routes
-usersRoutes.use('/reset', resetRoutes);
 
 // GET: /email  Resends the verification email
 usersRoutes.get('/email', middlewares.checkAuth, async (req, res) => {
@@ -87,9 +107,9 @@ usersRoutes.get('/email', middlewares.checkAuth, async (req, res) => {
       status: 200,
       type: 'resend-emailVerify',
       payload: {
-        user_id: req.user!._id,
+        _id: req.user!._id,
         token: token,
-      },
+      } as Requests.WorkerChangeEmail,
     });
 
     // Waits for the response from the workers
@@ -114,10 +134,10 @@ usersRoutes.put('/email', middlewares.checkAuth, async (req, res) => {
       status: 200,
       type: 'change-email',
       payload: {
-        user_id: req.user!._id,
+        _id: req.user!._id,
         email: email,
         token: token,
-      },
+      } as Requests.WorkerChangeEmail,
     });
 
     // Waits for the response

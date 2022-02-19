@@ -8,7 +8,7 @@ import express from 'express';
 import Queue, { AmqpMessage } from 'tow96-amqpwrapper';
 
 // models
-import { Wallet } from '../../Models/index';
+import { Objects } from '../../Models/index';
 
 // routes
 import walletIdRoutes from './walletId';
@@ -30,11 +30,11 @@ walletsRoutes.get('/', async (req, res) => {
     const corrId = await Queue.publishWithReply(req.rabbitChannel!, transactionQueue, {
       status: 200,
       type: 'get-Wallets',
-      payload: { _id: req.user!._id },
+      payload: { _id: req.user!._id } as Objects.User.BaseUser,
     });
     const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
-    res.status(response.status).send(response.payload.wallets);
+    res.status(response.status).send(response.payload.wallets as Objects.Wallet[]);
   } catch (e) {
     res.status(500).send(e);
   }
@@ -51,13 +51,13 @@ walletsRoutes.post('/', middlewares.checkConfirmed, async (req, res) => {
         user_id: req.user!._id,
         name: req.body.name,
         money: req.body.money,
-      } as Wallet,
+      } as Objects.Wallet,
     });
 
     // Waits for the response from the workers
     const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
-    res.status(response.status).send(response.payload);
+    res.status(response.status).send(response.payload as Objects.Wallet);
   } catch (e) {
     AmqpMessage.sendHttpError(res, e);
   }

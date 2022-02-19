@@ -20,10 +20,10 @@ import middlewares from '../utils/middlewares';
 const router = express.Router();
 
 router.use('/authentication', cookieParser(), authenticationRoutes);
+router.use('/categories', middlewares.checkAuth, categoryRoutes);
 router.use('/transactions', middlewares.checkAuth, transactionRoutes);
 router.use('/users', usersRoutes);
 router.use('/wallets', middlewares.checkAuth, walletsRoutes);
-router.use('/categories', middlewares.checkAuth, categoryRoutes);
 
 // The rest of the Routes will return a 404 error
 router.use('*', (__, res) => {

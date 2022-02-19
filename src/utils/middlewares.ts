@@ -11,11 +11,14 @@ dotenv.config();
 
 import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
+import logger from 'tow96-logger';
 import Queue, { AmqpMessage } from 'tow96-amqpwrapper';
 
+// Models
+import { Objects, Requests } from '../Models';
+
 // utils
-import logger from 'tow96-logger';
-import { User } from '../Models';
+import UserConverter from '../utils/userConverter';
 
 export default class Middlewares {
   private static userQueue = (process.env.USER_QUEUE as string) || 'userQueue';
@@ -30,7 +33,7 @@ export default class Middlewares {
   };
 
   // Checks if a jwt Token is valid
-  private static isAuth = (token: string, isRefresh = false): string | Record<string, string> => {
+  private static isAuth = (token: string, isRefresh = false): jwt.JwtPayload => {
     if (!process.env.REFRESH_TOKEN_KEY || !process.env.AUTH_TOKEN_KEY) {
       logger.error('No jwt encryption keys provided');
       throw AmqpMessage.errorMessage('No jwt encryption keys');
@@ -38,7 +41,7 @@ export default class Middlewares {
 
     try {
       const decodedToken = jwt.verify(token, isRefresh ? process.env.REFRESH_TOKEN_KEY : process.env.AUTH_TOKEN_KEY);
-      return decodedToken as Record<string, string>;
+      return decodedToken as jwt.JwtPayload;
     } catch (err) {
       throw AmqpMessage.errorMessage('Invalid token', 401);
     }
@@ -83,7 +86,7 @@ export default class Middlewares {
       // Check if the authToken is valid
       const decodedToken: any = this.isAuth(authorization.split(' ')[1]);
 
-      req.user = decodedToken as User;
+      req.user = decodedToken as Objects.User.BaseUser;
 
       next();
     } catch (err: any) {
@@ -105,20 +108,22 @@ export default class Middlewares {
       const corrId = await Queue.publishWithReply(req.rabbitChannel!, this.userQueue, {
         status: 200,
         type: 'get-byId',
-        payload: decodedToken,
+        payload: decodedToken as Requests.WorkerGetUserById,
       });
       const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
-      const user: User = response.payload;
+      const user: Objects.User.BackendUser = response.payload;
       if (!user) throw AmqpMessage.errorMessage('Bad credentials', 422, { login: 'Bad credentials' });
 
       // Checks if the user has the token as still valid
-      if (user.singleSessionToken !== refreshToken && !user.refreshTokens.includes(refreshToken)) {
+      if (
+        user.singleSessionToken !== refreshToken &&
+        (!user.refreshTokens || !user.refreshTokens.includes(refreshToken))
+      ) {
         throw AmqpMessage.errorMessage('Invalid token', 403);
       }
 
-      user.password = undefined;
-
-      req.user = user;
+      // Converts the BackendUser into a BaseUser
+      req.user = UserConverter.convertToBaseUser(user);
 
       next();
     } catch (error) {
@@ -130,7 +135,7 @@ export default class Middlewares {
   // Middleware that checks if the user's account is confirmed, is meant to go after checkAuth if not, it fails automatically
   static checkConfirmed = (req: Request, res: Response, next: NextFunction): void => {
     try {
-      if (!req.user) throw AmqpMessage.errorMessage('Server Error, email confirmation verification is alone', 501);
+      if (!req.user) throw AmqpMessage.errorMessage('Server Error, there is no user in the request', 501);
 
       if (!req.user.accountConfirmed)
         throw AmqpMessage.errorMessage('Email not confirmed', 403, { confirmation: 'E-mail not verified' });
@@ -145,7 +150,9 @@ export default class Middlewares {
   static validateAdminOrOwner = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       // This middleware is intended to be used after the checkAuth, so it will take the data from the req
-      const { _id, role } = req.user! as User;
+      if (!req.user) throw AmqpMessage.errorMessage('Server Error, there is no user in the request', 501);
+
+      const { _id, role } = req.user;
 
       if (_id !== req.params.userId && role.toUpperCase() !== 'ADMIN')
         throw AmqpMessage.errorMessage('Invalid user', 403);
