@@ -8,10 +8,13 @@ import express from 'express';
 import Queue, { AmqpMessage } from 'tow96-amqpwrapper';
 
 // models
-import { Wallet } from '../../Models/index';
+import { Objects } from '../../Models/index';
 
 // routes
 import walletIdRoutes from './walletId';
+
+// utils
+import middlewares from '../../utils/middlewares';
 
 const transactionQueue = (process.env.TRANSACTION_QUEUE as string) || 'transactionQueue';
 
@@ -23,34 +26,38 @@ walletsRoutes.use('/:walletId', walletIdRoutes);
 // GET root: gets all the wallets of a user
 walletsRoutes.get('/', async (req, res) => {
   // Makes the call to the DB
-  const corrId = Queue.publishWithReply(req.rabbitChannel!, transactionQueue, {
-    status: 200,
-    type: 'get-Wallets',
-    payload: { _id: req.user!._id },
-  });
-  const response = await Queue.fetchFromLocalQueue(req.rabbitChannel!, corrId);
+  try {
+    const corrId = await Queue.publishWithReply(req.rabbitChannel!, transactionQueue, {
+      status: 200,
+      type: 'get-Wallets',
+      payload: { _id: req.user!._id } as Objects.User.BaseUser,
+    });
+    const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
-  res.status(response.status).send(response.payload.wallets);
+    res.status(response.status).send(response.payload.wallets as Objects.Wallet[]);
+  } catch (e) {
+    res.status(500).send(e);
+  }
 });
 
 // POST root: creates a new wallet for the soliciting user
-walletsRoutes.post('/', async (req, res) => {
+walletsRoutes.post('/', middlewares.checkConfirmed, async (req, res) => {
   try {
     // Passes the data to the Transaction Workers
-    const corrId = Queue.publishWithReply(req.rabbitChannel!, transactionQueue, {
+    const corrId = await Queue.publishWithReply(req.rabbitChannel!, transactionQueue, {
       status: 200,
       type: 'add-Wallet',
       payload: {
         user_id: req.user!._id,
         name: req.body.name,
         money: req.body.money,
-      } as Wallet,
+      } as Objects.Wallet,
     });
 
     // Waits for the response from the workers
-    const response = await Queue.fetchFromLocalQueue(req.rabbitChannel!, corrId);
+    const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
-    res.status(response.status).send(response.payload);
+    res.status(response.status).send(response.payload as Objects.Wallet);
   } catch (e) {
     AmqpMessage.sendHttpError(res, e);
   }

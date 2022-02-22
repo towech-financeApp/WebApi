@@ -9,15 +9,17 @@ dotenv.config();
 
 // Libraries
 import jwt from 'jsonwebtoken';
-import { User } from '../Models';
+import { Objects } from '../Models';
 
 export default class TokenGenerator {
-  static authToken = (user: User): string => {
+  static authToken = (user: Objects.User.BaseUser): string => {
     return jwt.sign(
       {
+        name: user.name,
         username: user.username,
         _id: user._id,
         role: user.role,
+        accountConfirmed: user.accountConfirmed,
       },
       process.env.AUTH_TOKEN_KEY as string,
       {
@@ -26,7 +28,7 @@ export default class TokenGenerator {
     );
   };
 
-  static refreshToken = (user: User, keepSession: boolean): string => {
+  static refreshToken = (user: Objects.User.BaseUser, keepSession: boolean): string => {
     return jwt.sign(
       {
         _id: user._id,
@@ -34,6 +36,32 @@ export default class TokenGenerator {
       process.env.REFRESH_TOKEN_KEY as string,
       {
         expiresIn: keepSession ? '30d' : '1h',
+      },
+    );
+  };
+
+  static passwordToken = (id: string): string => {
+    return jwt.sign(
+      {
+        id: id,
+        content: 'passwordReset',
+      },
+      process.env.PASSWORD_TOKEN_KEY as string,
+      {
+        expiresIn: '24h',
+      },
+    );
+  };
+
+  static verificationToken = (id: string, email: string): string => {
+    return jwt.sign(
+      {
+        user_id: id,
+        email: email,
+      },
+      process.env.EMAILVERIFICATION_TOKEN_KEY as string,
+      {
+        expiresIn: '7d',
       },
     );
   };

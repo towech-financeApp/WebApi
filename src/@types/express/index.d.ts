@@ -6,7 +6,7 @@ declare global {
     interface Request {
       rabbitChannel?: amqplib.Channel;
       rabbitConnection?: amqplib.Connection;
-      user?: Models.User;
+      user?: Models.Objects.User.BaseUser;
     }
   }
 }
