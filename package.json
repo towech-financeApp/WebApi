@@ -1,6 +1,6 @@
 {
   "name": "webapi",
-  "version": "0.7.0",
+  "version": "1.0.0",
   "description": "Towech-FinanceApp Web API",
   "main": "src/index.ts",
   "scripts": {
@@ -21,31 +21,31 @@
   },
   "homepage": "https://github.com/towech-financeApp/WebApi#readme",
   "devDependencies": {
-    "@types/amqplib": "^0.5.17",
+    "@types/amqplib": "^0.8.2",
     "@types/bcryptjs": "^2.4.2",
     "@types/cookie-parser": "^1.4.2",
     "@types/express": "^4.17.12",
-    "@types/jsonwebtoken": "^8.5.1",
+    "@types/jsonwebtoken": "^8.5.8",
     "@types/morgan": "^1.9.3",
-    "@types/node": "^15.14.9",
-    "@typescript-eslint/eslint-plugin": "^4.33.0",
-    "@typescript-eslint/parser": "^4.33.0",
-    "eslint": "^7.32.0",
-    "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-prettier": "^3.4.1",
-    "prettier": "^2.4.1",
-    "ts-node": "^10.4.0",
+    "@types/node": "^17.0.19",
+    "@typescript-eslint/eslint-plugin": "^5.12.1",
+    "@typescript-eslint/parser": "^5.12.1",
+    "eslint": "^8.9.0",
+    "eslint-config-prettier": "^8.4.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "prettier": "^2.5.1",
+    "ts-node": "^10.5.0",
     "ts-node-dev": "^1.1.8",
-    "typescript": "^4.5.2"
+    "typescript": "^4.5.5"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.5",
-    "dotenv": "^10.0.0",
-    "express": "^4.17.1",
+    "dotenv": "^16.0.0",
+    "express": "^4.17.3",
     "jsonwebtoken": "^8.5.1",
     "morgan": "^1.10.0",
-    "tow96-amqpwrapper": "0.1.1",
-    "tow96-logger": "0.1.1"
+    "tow96-amqpwrapper": "^0.1.2",
+    "tow96-logger": "^0.1.2"
   }
 }
