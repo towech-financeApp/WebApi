@@ -1,9 +1,8 @@
-name: deploy to server
+name: Create container, push and deploy
 
 on:
-  push:
-    branches: [ master ]
-
+  release:
+    types: [published]
 jobs:
   build:
     if: "!contains(github.event.head_commit.message, 'skip deploy')" # will not run if the commit contains that phrase
