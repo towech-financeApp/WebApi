@@ -1,6 +1,6 @@
 {
   "name": "webapi",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Towech-FinanceApp Web API",
   "main": "src/index.ts",
   "scripts": {
