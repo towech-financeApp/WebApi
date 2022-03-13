@@ -9,7 +9,7 @@ import Queue, { AmqpMessage } from 'tow96-amqpwrapper';
 import jwt from 'jsonwebtoken';
 
 // Models
-import { User } from '../../Models';
+import { Objects } from '../../Models';
 
 // Utils
 import TokenGenerator from '../../utils/tokenGenerator';
@@ -30,7 +30,7 @@ resetRoutes.post('/', async (req, res) => {
 
     // If the user is not registered, sends a 204 code and acts as if it worked
     const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
-    const db_user: User = response.payload;
+    const db_user: Objects.User.BackendUser = response.payload;
     if (!db_user) throw AmqpMessage.errorMessage('', 204);
 
     // Creates the passwordResetToken this token is only valid for 24h
@@ -72,7 +72,7 @@ resetRoutes.get('/:token', async (req, res) => {
     // If there is no user, returns an error
     const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
     if (!response.payload) throw AmqpMessage.errorMessage('Invalid user', 422);
-    const db_user: User = response.payload;
+    const db_user: Objects.User.BackendUser = response.payload;
 
     // Compares the resetTokens
     if (db_user.resetToken === token) {
@@ -119,7 +119,7 @@ resetRoutes.post('/:token', async (req, res) => {
     // If there is no user, returns an error
     const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
     if (!response.payload) throw AmqpMessage.errorMessage('Invalid user', 422);
-    const db_user: User = response.payload;
+    const db_user: Objects.User.BackendUser = response.payload;
 
     // Compares the resetTokens
     if (db_user.resetToken === token) {
