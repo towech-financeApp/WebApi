@@ -49,8 +49,8 @@ walletIdRoutes.patch('/', middlewares.checkConfirmed, async (req, res) => {
         _id: params.walletId,
         user_id: req.user!._id,
         name: req.body.name,
-        icon_id: req.icon_id,
-        currency: req.currency,
+        icon_id: req.body.icon_id,
+        currency: req.body.currency,
       } as Objects.Wallet,
     });
     logger.http(corrId);
