@@ -51,6 +51,9 @@ walletsRoutes.post('/', middlewares.checkConfirmed, async (req, res) => {
         user_id: req.user!._id,
         name: req.body.name,
         money: req.body.money,
+        currency: req.body.currency,
+        parent_id: req.body.parent_id,
+        icon_id: req.body.icon_id,
       } as Objects.Wallet,
     });
 

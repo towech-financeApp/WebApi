@@ -38,7 +38,7 @@ walletIdRoutes.get('/', middlewares.checkConfirmed, async (req, res) => {
   }
 });
 
-// PATCH: Change the wallet's data (except the money it holds)
+// PATCH: Change the wallet's data (except the money it holds nor it's parent/child relations)
 walletIdRoutes.patch('/', middlewares.checkConfirmed, async (req, res) => {
   try {
     const params: any = req.params;
@@ -49,6 +49,8 @@ walletIdRoutes.patch('/', middlewares.checkConfirmed, async (req, res) => {
         _id: params.walletId,
         user_id: req.user!._id,
         name: req.body.name,
+        icon_id: req.icon_id,
+        currency: req.currency,
       } as Objects.Wallet,
     });
     logger.http(corrId);
