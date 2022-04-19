@@ -9,7 +9,7 @@ import Queue, { AmqpMessage } from 'tow96-amqpwrapper';
 import jwt from 'jsonwebtoken';
 
 // Models
-import { Objects } from '../../Models';
+import { Objects, Requests } from '../../Models';
 
 // Utils
 import TokenGenerator from '../../utils/tokenGenerator';
@@ -25,7 +25,9 @@ resetRoutes.post('/', async (req, res) => {
     const corrId = await Queue.publishWithReply(req.rabbitChannel!, userQueue, {
       status: 200,
       type: 'get-byUsername',
-      payload: req.body,
+      payload: {
+        username: req.body.username,
+      } as Requests.WorkerGetUserByUsername,
     });
 
     // If the user is not registered, sends a 204 code and acts as if it worked
@@ -43,7 +45,7 @@ resetRoutes.post('/', async (req, res) => {
       payload: {
         _id: db_user._id,
         token: token,
-      },
+      } as Requests.WorkerPasswordReset,
     });
 
     res.sendStatus(204);
@@ -66,7 +68,7 @@ resetRoutes.get('/:token', async (req, res) => {
       type: 'get-byId',
       payload: {
         _id: payload.id,
-      },
+      }as Requests.WorkerGetUserById,
     });
 
     // If there is no user, returns an error
@@ -85,9 +87,8 @@ resetRoutes.get('/:token', async (req, res) => {
           status: 200,
           type: 'password-reset',
           payload: {
-            id: db_user._id,
-            token: null,
-          },
+            _id:db_user._id,
+          }as Requests.WorkerPasswordReset,
         });
         throw AmqpMessage.errorMessage('Invalid token', 422);
       }
@@ -113,7 +114,7 @@ resetRoutes.post('/:token', async (req, res) => {
       type: 'get-byId',
       payload: {
         _id: payload.id,
-      },
+      } as Requests.WorkerGetUserById,
     });
 
     // If there is no user, returns an error
@@ -131,9 +132,11 @@ resetRoutes.post('/:token', async (req, res) => {
           status: 200,
           type: 'change-Password-Force',
           payload: {
-            ...req.body,
-            user_id: db_user._id,
-          },
+            _id: db_user._id,
+            confirmPassword: req.body.confirmPassword,
+            newPassword: req.body.newPassword,
+            oldPassword: req.body.oldPassword,
+          } as Requests.WorkerChangePassword,
         });
 
         // Waits for the response from the workers
@@ -144,9 +147,8 @@ resetRoutes.post('/:token', async (req, res) => {
           status: 200,
           type: 'password-reset',
           payload: {
-            id: db_user._id,
-            token: null,
-          },
+            _id: db_user._id,
+          } as Requests.WorkerPasswordReset,
         });
         throw AmqpMessage.errorMessage('Invalid token', 422);
       }
