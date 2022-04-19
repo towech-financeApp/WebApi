@@ -9,7 +9,7 @@ import Queue, { AmqpMessage } from 'tow96-amqpwrapper';
 
 // // Routes
 import userIdRoutes from './userId';
-// import resetRoutes from './reset';
+import resetRoutes from './reset';
 
 // Models
 import { Objects, Requests } from '../../Models';
@@ -26,7 +26,7 @@ const usersRoutes = express.Router();
 usersRoutes.use('/:userId', userIdRoutes);
 
 // // PasswordReset routes
-// usersRoutes.use('/reset', resetRoutes);
+usersRoutes.use('/reset', resetRoutes);
 
 // GET: /  Gets a list of all the users if the requester is an admin or the superuser
 usersRoutes.get('/', middlewares.checkAdmin, async (req, res) => {
