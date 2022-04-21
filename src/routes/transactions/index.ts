@@ -41,6 +41,7 @@ transactionRoutes.post('/', middlewares.checkConfirmed, async (req, res) => {
         concept: req.body.concept,
         amount: req.body.amount,
         transactionDate: req.body.transactionDate,
+        excludeFromReport: req.body.excludeFromReport,
       } as Objects.Transaction,
     });
 
