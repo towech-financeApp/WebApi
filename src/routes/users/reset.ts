@@ -68,7 +68,7 @@ resetRoutes.get('/:token', async (req, res) => {
       type: 'get-byId',
       payload: {
         _id: payload.id,
-      }as Requests.WorkerGetUserById,
+      } as Requests.WorkerGetUserById,
     });
 
     // If there is no user, returns an error
@@ -87,8 +87,8 @@ resetRoutes.get('/:token', async (req, res) => {
           status: 200,
           type: 'password-reset',
           payload: {
-            _id:db_user._id,
-          }as Requests.WorkerPasswordReset,
+            _id: db_user._id,
+          } as Requests.WorkerPasswordReset,
         });
         throw AmqpMessage.errorMessage('Invalid token', 422);
       }
