@@ -8,7 +8,7 @@ import express from 'express';
 import Queue, { AmqpMessage } from 'tow96-amqpwrapper';
 
 // models
-import { Objects } from '../../Models/index';
+import { Objects, Requests } from '../../Models/index';
 
 // routes
 import walletIdRoutes from './walletId';
@@ -61,6 +61,32 @@ walletsRoutes.post('/', middlewares.checkConfirmed, async (req, res) => {
     const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
     res.status(response.status).send(response.payload as Objects.Wallet);
+  } catch (e) {
+    AmqpMessage.sendHttpError(res, e);
+  }
+});
+
+// POST transfer: creates a pair of transactions to transfer an amount from one to another
+walletsRoutes.post('/transfer', middlewares.checkConfirmed, async (req, res) => {
+  try {
+    // Passes the data to the Transaction Workers
+    const corrId = await Queue.publishWithReply(req.rabbitChannel!, transactionQueue, {
+      status: 200,
+      type: 'transfer-Wallet',
+      payload: {
+        user_id: req.user!._id,
+        from_id: req.body.from_id,
+        to_id: req.body.to_id,
+        amount: req.body.amount,
+        concept: req.body.concept,
+        transactionDate: req.body.transactionDate,
+      } as Requests.WorkerTransfer,
+    });
+
+    // Waits for the response from the workers
+    const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
+
+    res.status(response.status).send(response.payload as Objects.Transaction[]);
   } catch (e) {
     AmqpMessage.sendHttpError(res, e);
   }
