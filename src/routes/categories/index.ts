@@ -5,7 +5,7 @@
  * index for all the category routes
  */
 import express from 'express';
-import Queue from 'tow96-amqpwrapper';
+import Queue, { AmqpMessage } from 'tow96-amqpwrapper';
 
 // Models
 import { Objects, Requests, Responses } from '../../Models';
@@ -24,7 +24,7 @@ categoryRoutes.get('/', async (req, res) => {
         user_id: req.user!._id,
       } as Requests.WorkerGetAllCategories,
     });
-    const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
+    const response: AmqpMessage<Objects.Category[]> = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
     // Sorts the received categories
     const incomeCats: Objects.Category[] = [];

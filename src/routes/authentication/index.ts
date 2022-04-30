@@ -35,8 +35,12 @@ authenticationRoutes.post('/login', async (req, res) => {
         username: request.username,
       } as Requests.WorkerGetUserByUsername,
     });
-    const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
-    const user: Objects.User.BackendUser = response.payload;
+    const response: AmqpMessage<Objects.User.BackendUser> = await Queue.fetchFromQueue(
+      req.rabbitChannel!,
+      corrId,
+      corrId,
+    );
+    const user = response.payload;
     if (!user) throw AmqpMessage.errorMessage('Bad credentials', 422, { login: 'Bad credentials' });
 
     // Compares the password

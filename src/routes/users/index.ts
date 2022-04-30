@@ -64,8 +64,12 @@ usersRoutes.post('/register', middlewares.checkAdmin, async (req, res) => {
     } as Requests.WorkerRegisterUser,
   });
 
-  const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
-  const user: Objects.User.BackendUser = response.payload;
+  const response: AmqpMessage<Objects.User.BackendUser> = await Queue.fetchFromQueue(
+    req.rabbitChannel!,
+    corrId,
+    corrId,
+  );
+  const user = response.payload;
 
   const output = UserConverter.convertToBaseUser(user);
 
@@ -88,7 +92,7 @@ usersRoutes.put('/password', middlewares.checkAuth, async (req, res) => {
     });
 
     // Waits for the response from the workers
-    const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
+    const response: AmqpMessage<null> = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
     res.status(response.status).send(response.payload);
   } catch (e) {
@@ -113,7 +117,7 @@ usersRoutes.get('/email', middlewares.checkAuth, async (req, res) => {
     });
 
     // Waits for the response from the workers
-    const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
+    const response: AmqpMessage<null> = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
     res.status(response.status).send(response.payload);
   } catch (e) {
@@ -141,7 +145,7 @@ usersRoutes.put('/email', middlewares.checkAuth, async (req, res) => {
     });
 
     // Waits for the response
-    const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
+    const response: AmqpMessage<null> = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
     res.status(response.status).send(response.payload);
   } catch (e) {

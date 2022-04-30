@@ -46,9 +46,9 @@ transactionRoutes.post('/', middlewares.checkConfirmed, async (req, res) => {
     });
 
     // Waits for the response from the workers
-    const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
+    const response: AmqpMessage<Objects.Transaction[]> = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
-    res.status(response.status).send(response.payload as Objects.Transaction[]);
+    res.status(response.status).send(response.payload);
   } catch (e) {
     AmqpMessage.sendHttpError(res, e);
   }

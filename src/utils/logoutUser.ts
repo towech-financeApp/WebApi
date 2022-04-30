@@ -8,7 +8,7 @@
 
 // Libraries
 import amqplib from 'amqplib';
-import Queue from 'tow96-amqpwrapper';
+import Queue, { AmqpMessage } from 'tow96-amqpwrapper';
 
 // Models
 import { Objects, Requests } from '../Models';
@@ -30,8 +30,8 @@ const logoutUser = async (
       _id: user._id,
     } as Requests.WorkerGetUserById,
   });
-  const response = await Queue.fetchFromQueue(channel, corrId, corrId);
-  const bUser: Objects.User.BackendUser = response.payload;
+  const response: AmqpMessage<Objects.User.BackendUser> = await Queue.fetchFromQueue(channel, corrId, corrId);
+  const bUser = response.payload;
 
   // If a token is provided, it only removes that token, otherwise, removes all of them
   if (token) {

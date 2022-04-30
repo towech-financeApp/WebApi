@@ -32,9 +32,9 @@ walletsRoutes.get('/', async (req, res) => {
       type: 'get-Wallets',
       payload: { _id: req.user!._id } as Objects.User.BaseUser,
     });
-    const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
+    const response: AmqpMessage<Objects.Wallet[]> = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
-    res.status(response.status).send(response.payload.wallets as Objects.Wallet[]);
+    res.status(response.status).send(response.payload);
   } catch (e) {
     res.status(500).send(e);
   }
@@ -58,9 +58,9 @@ walletsRoutes.post('/', middlewares.checkConfirmed, async (req, res) => {
     });
 
     // Waits for the response from the workers
-    const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
+    const response: AmqpMessage<Objects.Wallet> = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
-    res.status(response.status).send(response.payload as Objects.Wallet);
+    res.status(response.status).send(response.payload);
   } catch (e) {
     AmqpMessage.sendHttpError(res, e);
   }
@@ -84,7 +84,7 @@ walletsRoutes.post('/transfer', middlewares.checkConfirmed, async (req, res) => 
     });
 
     // Waits for the response from the workers
-    const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
+    const response: AmqpMessage<Objects.Transaction[]> = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
     res.status(response.status).send(response.payload as Objects.Transaction[]);
   } catch (e) {
