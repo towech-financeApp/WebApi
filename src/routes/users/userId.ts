@@ -35,8 +35,12 @@ userIdRoutes.patch('/', middlewares.checkAuth, middlewares.validateAdminOrOwner,
     });
 
     logger.http(corrId);
-    const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
-    const user: Objects.User.BackendUser = response.payload;
+    const response: AmqpMessage<Objects.User.BackendUser> = await Queue.fetchFromQueue(
+      req.rabbitChannel!,
+      corrId,
+      corrId,
+    );
+    const user = response.payload;
 
     const output = UserConverter.convertToBaseUser(user);
 

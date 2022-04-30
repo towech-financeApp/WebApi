@@ -30,9 +30,9 @@ walletIdRoutes.get('/', middlewares.checkConfirmed, async (req, res) => {
         user_id: req.user!._id,
       } as Objects.Wallet,
     });
-    const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
+    const response: AmqpMessage<Objects.Wallet> = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
-    res.status(response.status).send(response.payload as Objects.Wallet);
+    res.status(response.status).send(response.payload);
   } catch (e) {
     AmqpMessage.sendHttpError(res, e);
   }
@@ -54,9 +54,9 @@ walletIdRoutes.patch('/', middlewares.checkConfirmed, async (req, res) => {
       } as Objects.Wallet,
     });
     logger.http(corrId);
-    const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
+    const response: AmqpMessage<Objects.Wallet> = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
-    res.status(response.status).send(response.payload as Objects.Wallet);
+    res.status(response.status).send(response.payload);
   } catch (e) {
     AmqpMessage.sendHttpError(res, e);
   }
@@ -74,9 +74,9 @@ walletIdRoutes.delete('/', middlewares.checkConfirmed, async (req, res) => {
         user_id: req.user!._id,
       } as Objects.Wallet,
     });
-    const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
+    const response: AmqpMessage<Objects.Wallet> = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
-    res.status(response.status).send(response.payload as Objects.Wallet);
+    res.status(response.status).send(response.payload);
   } catch (e) {
     AmqpMessage.sendHttpError(res, e);
   }
@@ -100,9 +100,9 @@ walletIdRoutes.get('/transactions', async (req, res) => {
         datamonth: datamonth,
       } as Requests.WorkerGetTransactions,
     });
-    const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
+    const response: AmqpMessage<Objects.Transaction[]> = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
-    res.status(response.status).send(response.payload.transactions as Objects.Transaction[]);
+    res.status(response.status).send(response.payload);
   } catch (e) {
     logger.http(e);
     AmqpMessage.sendHttpError(res, e);

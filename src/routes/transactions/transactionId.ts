@@ -10,7 +10,7 @@ import express from 'express';
 import Queue, { AmqpMessage } from 'tow96-amqpwrapper';
 
 // models
-import { Objects } from '../../Models';
+import { Objects, Responses } from '../../Models';
 
 // utils
 import middlewares from '../../utils/middlewares';
@@ -35,9 +35,9 @@ transactionIdRoutes.get('/', async (req, res) => {
     });
 
     // Waits for the response from the workers
-    const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
+    const response: AmqpMessage<Objects.Transaction> = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
-    res.status(response.status).send(response.payload as Objects.Transaction);
+    res.status(response.status).send(response.payload);
   } catch (e) {
     AmqpMessage.sendHttpError(res, e);
   }
@@ -67,9 +67,13 @@ transactionIdRoutes.patch('/', middlewares.checkConfirmed, async (req, res) => {
     });
 
     // Waits for the response from the workers
-    const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
+    const response: AmqpMessage<Responses.EditTransactionResponse> = await Queue.fetchFromQueue(
+      req.rabbitChannel!,
+      corrId,
+      corrId,
+    );
 
-    res.status(response.status).send(response.payload as Objects.Transaction);
+    res.status(response.status).send(response.payload);
   } catch (e) {
     AmqpMessage.sendHttpError(res, e);
   }
@@ -91,9 +95,9 @@ transactionIdRoutes.delete('/', middlewares.checkConfirmed, async (req, res) => 
     });
 
     // Waits for the response from the workers
-    const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
+    const response: AmqpMessage<Objects.Transaction[]> = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
-    res.status(response.status).send(response.payload as Objects.Transaction);
+    res.status(response.status).send(response.payload);
   } catch (e) {
     AmqpMessage.sendHttpError(res, e);
   }

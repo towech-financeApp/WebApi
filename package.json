@@ -46,7 +46,7 @@
     "express": "^4.17.3",
     "jsonwebtoken": "^8.5.1",
     "morgan": "^1.10.0",
-    "tow96-amqpwrapper": "^0.1.2",
+    "tow96-amqpwrapper": "^0.2.0",
     "tow96-logger": "^0.1.2"
   }
 }

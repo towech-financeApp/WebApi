@@ -31,8 +31,12 @@ resetRoutes.post('/', async (req, res) => {
     });
 
     // If the user is not registered, sends a 204 code and acts as if it worked
-    const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
-    const db_user: Objects.User.BackendUser = response.payload;
+    const response: AmqpMessage<Objects.User.BackendUser> = await Queue.fetchFromQueue(
+      req.rabbitChannel!,
+      corrId,
+      corrId,
+    );
+    const db_user = response.payload;
     if (!db_user) throw AmqpMessage.errorMessage('', 204);
 
     // Creates the passwordResetToken this token is only valid for 24h
@@ -72,9 +76,13 @@ resetRoutes.get('/:token', async (req, res) => {
     });
 
     // If there is no user, returns an error
-    const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
+    const response: AmqpMessage<Objects.User.BackendUser> = await Queue.fetchFromQueue(
+      req.rabbitChannel!,
+      corrId,
+      corrId,
+    );
     if (!response.payload) throw AmqpMessage.errorMessage('Invalid user', 422);
-    const db_user: Objects.User.BackendUser = response.payload;
+    const db_user = response.payload;
 
     // Compares the resetTokens
     if (db_user.resetToken === token) {
@@ -118,9 +126,13 @@ resetRoutes.post('/:token', async (req, res) => {
     });
 
     // If there is no user, returns an error
-    const response = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
+    const response: AmqpMessage<Objects.User.BackendUser> = await Queue.fetchFromQueue(
+      req.rabbitChannel!,
+      corrId,
+      corrId,
+    );
     if (!response.payload) throw AmqpMessage.errorMessage('Invalid user', 422);
-    const db_user: Objects.User.BackendUser = response.payload;
+    const db_user = response.payload;
 
     // Compares the resetTokens
     if (db_user.resetToken === token) {
@@ -140,7 +152,11 @@ resetRoutes.post('/:token', async (req, res) => {
         });
 
         // Waits for the response from the workers
-        const response = await Queue.fetchFromQueue(req.rabbitChannel!, passwordCorrId, passwordCorrId);
+        const response: AmqpMessage<null> = await Queue.fetchFromQueue(
+          req.rabbitChannel!,
+          passwordCorrId,
+          passwordCorrId,
+        );
         res.status(response.status).send(response.payload);
       } catch (e) {
         Queue.publishSimple(req.rabbitChannel!, userQueue, {
