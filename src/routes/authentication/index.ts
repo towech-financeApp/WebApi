@@ -76,11 +76,21 @@ authenticationRoutes.post('/login', async (req, res) => {
       payload: user as Objects.User.FrontendUser,
     });
 
+    // Possible expiration date for the cookie
+    const now = new Date();
+    const expiration = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
     if (process.env.NODE_ENV === 'development') {
-      res.cookie('jid', refreshToken, { httpOnly: true });
+      res.cookie('jid', refreshToken, { httpOnly: true, expires: (request.keepSession ? expiration : undefined) });
     } else {
-      res.cookie('jid', refreshToken, { httpOnly: true, domain: process.env.COOKIEDOMAIN || '' });
+      res.cookie('jid', refreshToken, {
+        httpOnly: true,
+        expires: (request.keepSession ? expiration : undefined),
+        secure: true,
+        domain: process.env.COOKIEDOMAIN || '',
+      });
     }
+    //{ httpOnly: true, domain: process.env.COOKIEDOMAIN || '' }
     res.send({ token: authToken } as Responses.AuthenticationResponse);
   } catch (error) {
     AmqpMessage.sendHttpError(res, error);

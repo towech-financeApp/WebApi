@@ -67,7 +67,7 @@ transactionIdRoutes.patch('/', middlewares.checkConfirmed, async (req, res) => {
     });
 
     // Waits for the response from the workers
-    const response: AmqpMessage<Responses.EditTransactionResponse> = await Queue.fetchFromQueue(
+    const response: AmqpMessage<Responses.ChangeTransactionResponse> = await Queue.fetchFromQueue(
       req.rabbitChannel!,
       corrId,
       corrId,
@@ -95,7 +95,7 @@ transactionIdRoutes.delete('/', middlewares.checkConfirmed, async (req, res) => 
     });
 
     // Waits for the response from the workers
-    const response: AmqpMessage<Objects.Transaction[]> = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
+    const response: AmqpMessage<Responses.ChangeTransactionResponse> = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
     res.status(response.status).send(response.payload);
   } catch (e) {

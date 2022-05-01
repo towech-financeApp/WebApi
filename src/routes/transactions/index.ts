@@ -10,7 +10,7 @@ import express from 'express';
 import Queue, { AmqpMessage } from 'tow96-amqpwrapper';
 
 // Models
-import { Objects } from '../../Models';
+import { Objects, Responses } from '../../Models';
 
 // routes
 import transactionIdRoutes from './transactionId';
@@ -46,7 +46,7 @@ transactionRoutes.post('/', middlewares.checkConfirmed, async (req, res) => {
     });
 
     // Waits for the response from the workers
-    const response: AmqpMessage<Objects.Transaction[]> = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
+    const response: AmqpMessage<Responses.ChangeTransactionResponse> = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
     res.status(response.status).send(response.payload);
   } catch (e) {
