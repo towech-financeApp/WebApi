@@ -81,11 +81,11 @@ authenticationRoutes.post('/login', async (req, res) => {
     const expiration = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
     if (process.env.NODE_ENV === 'development') {
-      res.cookie('jid', refreshToken, { httpOnly: true, expires: (request.keepSession ? expiration : undefined) });
+      res.cookie('jid', refreshToken, { httpOnly: true, expires: request.keepSession ? expiration : undefined });
     } else {
       res.cookie('jid', refreshToken, {
         httpOnly: true,
-        expires: (request.keepSession ? expiration : undefined),
+        expires: request.keepSession ? expiration : undefined,
         secure: true,
         domain: process.env.COOKIEDOMAIN || '',
       });
