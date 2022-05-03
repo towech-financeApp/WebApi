@@ -87,7 +87,7 @@ authenticationRoutes.post('/login', async (req, res) => {
         httpOnly: true,
         expires: request.keepSession ? expiration : undefined,
         secure: true,
-        domain: process.env.COOKIEDOMAIN || '',
+        // domain: process.env.COOKIEDOMAIN || '',
       });
     }
     //{ httpOnly: true, domain: process.env.COOKIEDOMAIN || '' }
