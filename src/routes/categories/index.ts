@@ -40,19 +40,24 @@ categoryRoutes.get('/', async (req, res) => {
     // Sorts the received categories
     const incomeCats: Objects.Category[] = [];
     const expenseCats: Objects.Category[] = [];
+    const archivedCats: Objects.Category[] = [];
 
-    response.payload.map((category: Objects.Category) => {
-      switch (category.type) {
-        case 'Income':
-          incomeCats.push(category);
-          break;
-        case 'Expense':
-          expenseCats.push(category);
-          break;
+    response.payload.forEach((category: Objects.Category) => {
+      if (category.archived) {
+        archivedCats.push(category);
+      } else {
+        switch (category.type) {
+          case 'Income':
+            incomeCats.push(category);
+            break;
+          case 'Expense':
+            expenseCats.push(category);
+            break;
+        }
       }
     });
 
-    res.status(response.status).send({ Income: incomeCats, Expense: expenseCats } as Responses.GetCategoriesResponse);
+    res.status(response.status).send({ Income: incomeCats, Expense: expenseCats, Archived: archivedCats } as Responses.GetCategoriesResponse);
   } catch (e) {
     res.status(500).send(e);
   }
