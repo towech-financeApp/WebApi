@@ -12,12 +12,18 @@ import Queue, { AmqpMessage } from 'tow96-amqpwrapper';
 // Models
 import { Objects, Requests, Responses } from '../../Models';
 
+// Routes
+import categoryIdRoutes from './categoryId';
+
 // Utils
 import middlewares from '../../utils/middlewares';
 
 const categoryQueue = (process.env.CATEGORY_QUEUE as string) || 'categoryQueue';
 
 const categoryRoutes = express.Router();
+
+// /:categoryId Functions for specific categories
+categoryRoutes.use('/:categoryId', categoryIdRoutes);
 
 // GET root: gets all the categories of a user
 categoryRoutes.get('/', async (req, res) => {
