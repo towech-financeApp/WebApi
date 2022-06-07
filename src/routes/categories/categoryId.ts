@@ -8,7 +8,7 @@ import express from 'express';
 import Queue, { AmqpMessage } from 'tow96-amqpwrapper';
 
 // models
-import { Objects, Requests } from '../../Models/index';
+import { Objects } from '../../Models/index';
 
 // utils
 import middlewares from '../../utils/middlewares';
@@ -50,7 +50,7 @@ categoryIdRoutes.patch('/', middlewares.checkConfirmed, async (req, res) => {
         icon_id: req.body.icon_id,
         parent_id: req.body.parent_id,
         name: req.body.name,
-        user_id: req.body.user_id,
+        user_id: req.user!._id,
       } as Objects.Category,
     });
     const response: AmqpMessage<Objects.Category> = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
@@ -71,9 +71,9 @@ categoryIdRoutes.delete('/', middlewares.checkConfirmed, async (req, res) => {
       payload: {
         _id: params.categoryId,
         user_id: req.user!._id,
-      } as Objects.Wallet,
+      } as Objects.Category,
     });
-    const response: AmqpMessage<Objects.Wallet> = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
+    const response: AmqpMessage<Objects.Category> = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
     res.status(response.status).send(response.payload);
   } catch (e) {

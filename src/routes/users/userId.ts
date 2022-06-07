@@ -50,4 +50,6 @@ userIdRoutes.patch('/', middlewares.checkAuth, middlewares.validateAdminOrOwner,
   }
 });
 
+// TODO: Delete a user
+
 export default userIdRoutes;
