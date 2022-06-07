@@ -6,7 +6,6 @@
  */
 import express from 'express';
 import Queue, { AmqpMessage } from 'tow96-amqpwrapper';
-import logger from 'tow96-logger';
 
 // models
 import { Objects, Requests } from '../../Models/index';
@@ -53,7 +52,6 @@ walletIdRoutes.patch('/', middlewares.checkConfirmed, async (req, res) => {
         currency: req.body.currency,
       } as Objects.Wallet,
     });
-    logger.http(corrId);
     const response: AmqpMessage<Objects.Wallet> = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
     res.status(response.status).send(response.payload);
@@ -104,7 +102,6 @@ walletIdRoutes.get('/transactions', async (req, res) => {
 
     res.status(response.status).send(response.payload);
   } catch (e) {
-    logger.http(e);
     AmqpMessage.sendHttpError(res, e);
   }
 });
