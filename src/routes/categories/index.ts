@@ -57,7 +57,9 @@ categoryRoutes.get('/', async (req, res) => {
       }
     });
 
-    res.status(response.status).send({ Income: incomeCats, Expense: expenseCats, Archived: archivedCats } as Responses.GetCategoriesResponse);
+    res
+      .status(response.status)
+      .send({ Income: incomeCats, Expense: expenseCats, Archived: archivedCats } as Responses.GetCategoriesResponse);
   } catch (e) {
     res.status(500).send(e);
   }
