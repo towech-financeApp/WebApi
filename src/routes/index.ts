@@ -13,6 +13,7 @@ import categoryRoutes from './categories';
 import transactionRoutes from './transactions';
 import usersRoutes from './users';
 import walletsRoutes from './wallets';
+import debtRoutes from './debts';
 
 // Utils
 import middlewares from '../utils/middlewares';
@@ -21,6 +22,7 @@ const router = express.Router();
 
 router.use('/authentication', cookieParser(), authenticationRoutes);
 router.use('/categories', middlewares.checkAuth, categoryRoutes);
+router.use('/debts', middlewares.checkAuth, debtRoutes);
 router.use('/transactions', middlewares.checkAuth, transactionRoutes);
 router.use('/users', usersRoutes);
 router.use('/wallets', middlewares.checkAuth, walletsRoutes);
