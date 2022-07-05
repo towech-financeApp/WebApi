@@ -26,7 +26,7 @@ debtIdRoutes.post('/', middlewares.checkConfirmed, async (req, res) => {
       type: 'debt-payment',
       payload: {
         user_id: req.user!._id,
-        debt_id: params.debt_id,
+        debt_id: params.debtId,
         amount: req.body.amount,
         wallet_id: req.body.string,
       } as Requests.WorkerPayDebt,
