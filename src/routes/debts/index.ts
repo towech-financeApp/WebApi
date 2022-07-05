@@ -11,7 +11,7 @@ import express from 'express';
 import Queue, { AmqpMessage } from 'tow96-amqpwrapper';
 
 // Models
-import { Objects } from '../../Models';
+import { Objects, Requests } from '../../Models';
 
 // Routes
 
@@ -38,13 +38,11 @@ categoryRoutes.post('/', middlewares.checkConfirmed, async (req, res) => {
         concept: newDebt.concept,
         date: newDebt.date,
         deduct: newDebt.deduct,
-      },
+      } as Requests.WorkerCreateDebt,
     });
 
-    // TODO: Add transaction if debt generates
-
     // Waits for the response from the workers
-    const response: AmqpMessage<any> = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
+    const response: AmqpMessage<Objects.Debt> = await Queue.fetchFromQueue(req.rabbitChannel!, corrId, corrId);
 
     res.status(response.status).send(response.payload);
   } catch (e) {
