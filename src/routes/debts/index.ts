@@ -4,7 +4,6 @@
  *
  * index for all the debt routes
  */
-// TODO: Models for requeests
 
 // Libraries
 import express from 'express';
@@ -14,21 +13,25 @@ import Queue, { AmqpMessage } from 'tow96-amqpwrapper';
 import { Objects, Requests } from '../../Models';
 
 // Routes
+import debtIdRoutes from './debtId';
 
 // Utils
 import middlewares from '../../utils/middlewares';
 
-const categoryQueue = (process.env.DEBT_QUEUE as string) || 'debtQueue';
+const debtQueue = (process.env.DEBT_QUEUE as string) || 'debtQueue';
 
-const categoryRoutes = express.Router();
+const debtRoutes = express.Router();
+
+// /:debtId Functions for specific debts
+debtRoutes.use('/:debtId', debtIdRoutes);
 
 // POST root: creates a new debt for the user
-categoryRoutes.post('/', middlewares.checkConfirmed, async (req, res) => {
+debtRoutes.post('/', middlewares.checkConfirmed, async (req, res) => {
   try {
-    const newDebt = req.body; //as Requests.NewCategoryRequest;
+    const newDebt = req.body as Requests.WorkerCreateDebt;
 
     // Passes the data to the Debt Workers
-    const corrId = await Queue.publishWithReply(req.rabbitChannel!, categoryQueue, {
+    const corrId = await Queue.publishWithReply(req.rabbitChannel!, debtQueue, {
       status: 200,
       type: 'add',
       payload: {
@@ -50,4 +53,4 @@ categoryRoutes.post('/', middlewares.checkConfirmed, async (req, res) => {
   }
 });
 
-export default categoryRoutes;
+export default debtRoutes;
