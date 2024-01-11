@@ -32,7 +32,7 @@ export default class UserConverter {
       createdAt: user.createdAt,
       name: user.name,
       role: user.role,
-      username: user.role,
+      username: user.username,
     };
 
     return output;
